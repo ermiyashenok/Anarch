@@ -308,6 +308,7 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist }: { movie: M
   const [cast, setCast] = useState<Cast[]>([]);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showTrailer, setShowTrailer] = useState(false);
 
   const isInWatchlist = watchlist.some(m => m.id === movie.id);
 
@@ -343,6 +344,7 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist }: { movie: M
   );
 
   return (
+    <>
     <motion.div 
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -413,14 +415,12 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist }: { movie: M
                   <Play size={24} className="fill-black" /> Play Now
                 </button>
                 {trailerKey && (
-                  <a 
-                    href={`https://www.youtube.com/watch?v=${trailerKey}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button 
+                    onClick={() => setShowTrailer(true)}
                     className="flex items-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-2xl font-bold text-lg hover:bg-white/20 transition-all active:scale-95 shadow-xl"
                   >
                     Watch Trailer
-                  </a>
+                  </button>
                 )}
                 <button 
                   onClick={() => onToggleWatchlist(movie)}
@@ -497,6 +497,42 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist }: { movie: M
             </div>
           </div>
     </motion.div>
+
+    <AnimatePresence>
+      {showTrailer && trailerKey && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setShowTrailer(false)}
+          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-10"
+        >
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10"
+          >
+            <button 
+              onClick={() => setShowTrailer(false)}
+              className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-white/10 text-white rounded-full transition-all z-10"
+            >
+              <X size={24} />
+            </button>
+            <iframe
+              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
+              title="Trailer"
+              className="w-full h-full"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   );
 };
 
