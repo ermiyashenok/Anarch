@@ -402,10 +402,10 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist }: { movie: M
                 <button 
                   onClick={() => {
                     if (details?.imdb_id) {
-                      window.open(`https://www.imdb.com/title/${details.imdb_id}/`, '_blank');
+                      window.open(`https://www.playimdb.com/title/${details.imdb_id}/`, '_blank');
                     } else {
                       const query = movie.title || movie.name;
-                      window.open(`https://www.imdb.com/find?q=${encodeURIComponent(query!)}`, '_blank');
+                      window.open(`https://www.playimdb.com/find?q=${encodeURIComponent(query!)}`, '_blank');
                     }
                   }}
                   className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-bold text-lg hover:bg-zinc-200 transition-all active:scale-95 shadow-xl"
@@ -606,15 +606,15 @@ export default function App() {
       const type = movie.title ? "movie" : "tv";
       const details = await tmdbService.getDetails(movie.id, type);
       if (details.imdb_id) {
-        window.open(`https://www.imdb.com/title/${details.imdb_id}/`, '_blank');
+        window.open(`https://www.playimdb.com/title/${details.imdb_id}/`, '_blank');
       } else {
         const query = movie.title || movie.name;
-        window.open(`https://www.imdb.com/find?q=${encodeURIComponent(query!)}`, '_blank');
+        window.open(`https://www.playimdb.com/find?q=${encodeURIComponent(query!)}`, '_blank');
       }
     } catch (error) {
       console.error("Error playing now", error);
       const query = movie.title || movie.name;
-      window.open(`https://www.imdb.com/find?q=${encodeURIComponent(query!)}`, '_blank');
+      window.open(`https://www.playimdb.com/find?q=${encodeURIComponent(query!)}`, '_blank');
     }
   };
 
