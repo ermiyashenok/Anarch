@@ -5,11 +5,7 @@ const BASE_URL = "https://api.themoviedb.org/3";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
 const getApiKey = () => {
-  const key = import.meta.env.VITE_TMDB_API_KEY;
-  if (!key || key === "YOUR_TMDB_API_KEY") {
-    return null;
-  }
-  return key;
+  return "0e3de8096e149b33d945f3b2684d9cdd";
 };
 
 const tmdbApi = axios.create({
