@@ -547,6 +547,91 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist }: { movie: M
   );
 };
 
+const FriendProfileView = ({ 
+  friend, 
+  onBack, 
+  onMovieClick 
+}: { 
+  friend: any, 
+  onBack: () => void, 
+  onMovieClick: (m: Movie) => void 
+}) => {
+  // Generate stable mock data for the friend based on their name
+  const [mockWatched] = useState(() => friend.watched || []);
+  const [mockWishlist] = useState(() => friend.wishlist || []);
+
+  return (
+    <div className="max-w-5xl mx-auto pb-32 pt-10">
+      <button 
+        onClick={onBack}
+        className="mb-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-brand-primary transition-all group"
+      >
+        <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to My Account
+      </button>
+
+      <section className="mb-24 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white/5 text-brand-primary text-4xl font-black mb-4 border border-white/10 shadow-2xl">
+            {friend.name.charAt(0)}
+          </div>
+          <h2 className="text-7xl md:text-8xl font-display font-black tracking-tighter uppercase italic text-white leading-none">
+            {friend.name}
+          </h2>
+          <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.5em] italic opacity-50">Anarch Rebel Member</p>
+          
+          <div className="flex items-center justify-center gap-12 pt-8">
+            <div className="text-center">
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Watched</p>
+              <p className="text-4xl font-display font-black text-white">{mockWatched.length}</p>
+            </div>
+            <div className="w-[1px] h-12 bg-white/5" />
+            <div className="text-center">
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Saved</p>
+              <p className="text-4xl font-display font-black text-white">{mockWishlist.length}</p>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      <div className="space-y-24">
+        <section className="space-y-8">
+          <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] px-1 text-center md:text-left">Currently Streaming</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {mockWatched.slice(0, 3).map(movie => (
+              <MovieCard 
+                key={movie.id} 
+                movie={movie} 
+                onClick={onMovieClick} 
+                className="w-full" 
+                colorful={true} 
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-8">
+          <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] px-1 text-center md:text-left">Wishlist Collection</h3>
+          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4">
+            {mockWishlist.map(movie => (
+              <MovieCard 
+                key={movie.id} 
+                movie={movie} 
+                onClick={onMovieClick} 
+                className="flex-none w-64 md:w-80" 
+                colorful={false} 
+              />
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+};
+
 const AccountView = ({ 
   user, 
   history, 
@@ -556,7 +641,8 @@ const AccountView = ({
   onClearHistory, 
   onMovieClick,
   onUpdateName,
-  onAddFriend 
+  onAddFriend,
+  onFriendClick 
 }: { 
   user: any, 
   history: Movie[], 
@@ -566,7 +652,8 @@ const AccountView = ({
   onClearHistory: () => void,
   onMovieClick: (m: Movie) => void,
   onUpdateName: (name: string) => void,
-  onAddFriend: (name: string) => void
+  onAddFriend: (name: string) => void,
+  onFriendClick: (friend: any) => void
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(user.name);
@@ -704,12 +791,16 @@ const AccountView = ({
             <div className="space-y-6">
               {friends.length > 0 ? (
                 friends.map((friend, idx) => (
-                  <div key={idx} className="flex items-center gap-4 group">
+                  <div 
+                    key={idx} 
+                    onClick={() => onFriendClick(friend)}
+                    className="flex items-center gap-4 group cursor-pointer"
+                  >
                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center font-black text-xs text-brand-primary group-hover:bg-brand-primary group-hover:text-brand-bg transition-all">
                       {friend.name.charAt(0)}
                     </div>
                     <div>
-                      <p className="text-xs font-black uppercase tracking-widest text-white">{friend.name}</p>
+                      <p className="text-xs font-black uppercase tracking-widest text-white group-hover:text-brand-primary transition-colors">{friend.name}</p>
                       <p className="text-[9px] text-brand-primary font-bold uppercase truncate max-w-[150px]">Watching: {friend.lastWatched}</p>
                     </div>
                   </div>
@@ -812,6 +903,8 @@ export default function App() {
     }
   });
 
+  const [selectedFriend, setSelectedFriend] = useState<any>(null);
+
   useEffect(() => {
     localStorage.setItem("anarch_user", JSON.stringify(user));
   }, [user]);
@@ -819,10 +912,21 @@ export default function App() {
   const [friends, setFriends] = useState(() => {
     try {
       const saved = localStorage.getItem("anarch_friends");
-      return saved ? JSON.parse(saved) : [
-        { name: "Neo_88", lastWatched: "The Matrix Resurrections" },
-        { name: "Cypher_X", lastWatched: "John Wick: Chapter 4" }
+      const defaultFriends = [
+        { 
+          name: "Neo_88", 
+          lastWatched: "The Matrix Resurrections",
+          watched: trending.slice(0, 5),
+          wishlist: popular.slice(0, 8)
+        },
+        { 
+          name: "Cypher_X", 
+          lastWatched: "John Wick: Chapter 4",
+          watched: series.slice(0, 3),
+          wishlist: topRated.slice(0, 10)
+        }
       ];
+      return saved ? JSON.parse(saved) : defaultFriends;
     } catch {
       return [];
     }
@@ -1518,7 +1622,7 @@ export default function App() {
                     )}
                   </>
                 )}
-                {activeTab === "account" && (
+                {activeTab === "account" && !selectedFriend && (
                   <AccountView 
                     user={user}
                     history={history}
@@ -1531,8 +1635,23 @@ export default function App() {
                     onAddFriend={(name) => {
                       const mockLastWatched = ["Inception", "The Matrix", "Breaking Bad", "Stranger Things", "Interstellar"];
                       const lastWatched = mockLastWatched[Math.floor(Math.random() * mockLastWatched.length)];
-                      setFriends(prev => [...prev, { name, lastWatched }]);
+                      // Add with some mock activity data
+                      const newFriend = { 
+                        name, 
+                        lastWatched,
+                        watched: trending.slice(0, 3),
+                        wishlist: popular.slice(0, 5)
+                      };
+                      setFriends(prev => [...prev, newFriend]);
                     }}
+                    onFriendClick={(friend) => setSelectedFriend(friend)}
+                  />
+                )}
+                {activeTab === "account" && selectedFriend && (
+                  <FriendProfileView 
+                    friend={selectedFriend}
+                    onBack={() => setSelectedFriend(null)}
+                    onMovieClick={handleMovieSelect}
                   />
                 )}
               </motion.div>
