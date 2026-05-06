@@ -1,27 +1,31 @@
 import axios from "axios";
 import { Movie, MovieDetails, Cast, Video } from "../types";
 
-const BASE_URL = "https://api.themoviedb.org/3";
+const IS_DEV = import.meta.env.DEV;
+const BASE_URL = IS_DEV ? "https://api.themoviedb.org/3" : "/api/tmdb";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
-
-const getApiKey = () => {
-  return "0e3de8096e149b33d945f3b2684d9cdd";
-};
 
 const tmdbApi = axios.create({
   baseURL: BASE_URL,
 });
 
-// Use interceptor to add API key to every request
+// Use interceptor to handle proxying or direct API calls
 tmdbApi.interceptors.request.use((config) => {
-  const key = getApiKey();
-  if (!key) {
-    throw new Error("TMDB_API_KEY_MISSING");
+  if (IS_DEV) {
+    // In development, use the key from .env directly
+    const key = import.meta.env.VITE_TMDB_API_KEY;
+    config.params = {
+      ...config.params,
+      api_key: key,
+    };
+  } else if (config.url) {
+    // In production, route through Vercel Serverless Function
+    config.params = {
+      ...config.params,
+      endpoint: config.url,
+    };
+    config.url = "";
   }
-  config.params = {
-    ...config.params,
-    api_key: key,
-  };
   return config;
 });
 
