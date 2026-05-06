@@ -17,7 +17,9 @@ import {
   Dice5,
   Upload,
   Trash2,
-  ArchiveX
+  ArchiveX,
+  User,
+  Settings
 } from "lucide-react";
 import { tmdbService, getImageUrl } from "./services/tmdb";
 import { Movie, MovieDetails, Cast } from "./types";
@@ -133,7 +135,7 @@ const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick }: { activ
         </div>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4">
         <button 
           onClick={onSearchClick}
           className="p-2 text-white/30 hover:text-white hover:bg-white/5 rounded-lg transition-all"
@@ -142,11 +144,17 @@ const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick }: { activ
           <SearchIcon size={20} />
         </button>
         <button 
-          onClick={onCsvUpload}
-          className="p-2 text-white/30 hover:text-brand-primary hover:bg-white/5 rounded-lg transition-all"
-          title="Import Watchlist CSV"
+          onClick={() => setActiveTab("account")}
+          className={cn(
+            "flex items-center gap-2 p-2 rounded-xl transition-all border",
+            activeTab === "account" 
+              ? "bg-brand-primary/10 border-brand-primary/20 text-brand-primary shadow-lg shadow-brand-primary/10" 
+              : "bg-white/5 border-white/5 text-white/30 hover:text-white hover:bg-white/10"
+          )}
+          title="Account"
         >
-          <Upload size={20} />
+          <User size={20} />
+          <span className="text-[10px] font-black uppercase tracking-widest hidden lg:block pr-1">Account</span>
         </button>
       </div>
     </nav>
@@ -536,6 +544,143 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist }: { movie: M
   );
 };
 
+const AccountView = ({ 
+  user, 
+  history, 
+  watchlist, 
+  onCsvUpload, 
+  onClearHistory, 
+  onMovieClick 
+}: { 
+  user: any, 
+  history: Movie[], 
+  watchlist: Movie[], 
+  onCsvUpload: () => void,
+  onClearHistory: () => void,
+  onMovieClick: (m: Movie) => void
+}) => {
+  return (
+    <div className="max-w-5xl mx-auto pb-32 pt-10">
+      {/* Profile Header - Minimalist */}
+      <section className="mb-24 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-tr from-brand-primary to-brand-primary/40 text-brand-bg text-4xl font-black mb-4 shadow-[0_0_50px_-12px_rgba(var(--brand-primary-rgb),0.5)]">
+            {user.name.charAt(0)}
+          </div>
+          <h2 className="text-7xl md:text-8xl font-display font-black tracking-tighter uppercase italic text-white leading-none">
+            {user.name}
+          </h2>
+          <div className="flex items-center justify-center gap-12 pt-8">
+            <div className="text-center group cursor-default">
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] group-hover:text-brand-primary transition-colors">Watched</p>
+              <p className="text-4xl font-display font-black text-white">{history.length}</p>
+            </div>
+            <div className="w-[1px] h-12 bg-white/5" />
+            <div className="text-center group cursor-default">
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] group-hover:text-brand-primary transition-colors">Saved</p>
+              <p className="text-4xl font-display font-black text-white">{watchlist.length}</p>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-20">
+        {/* Left Column: Actions */}
+        <div className="md:col-span-4 space-y-16">
+          <div className="space-y-8">
+            <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] px-1">Control Center</h3>
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={onCsvUpload}
+                className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/[0.03] rounded-3xl transition-all border border-transparent hover:border-white/5"
+              >
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-white mb-1 group-hover:text-brand-primary transition-colors">Sync Database</p>
+                  <p className="text-[10px] text-zinc-500 font-bold">Import CSV Watchlist</p>
+                </div>
+                <Upload size={18} className="text-white/20 group-hover:text-brand-primary transition-colors" />
+              </button>
+
+              <button 
+                onClick={onClearHistory}
+                className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/[0.03] rounded-3xl transition-all border border-transparent hover:border-white/5"
+              >
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-white mb-1 group-hover:text-red-500 transition-colors">Flush History</p>
+                  <p className="text-[10px] text-zinc-500 font-bold">Clear all viewing records</p>
+                </div>
+                <Trash2 size={18} className="text-white/20 group-hover:text-red-500 transition-colors" />
+              </button>
+
+              <button 
+                className="group flex items-center justify-between w-full p-6 text-left opacity-30 cursor-not-allowed"
+              >
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-white mb-1">Preferences</p>
+                  <p className="text-[10px] text-zinc-500 font-bold">App & UI Settings</p>
+                </div>
+                <Settings size={18} className="text-white/20" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: History List */}
+        <div className="md:col-span-8">
+          <div className="space-y-8">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em]">Recent Activity</h3>
+              <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Live Stream History</span>
+            </div>
+
+            {history.length > 0 ? (
+              <div className="space-y-1">
+                {history.slice(0, 10).map((movie, idx) => (
+                  <motion.div 
+                    key={movie.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    onClick={() => onMovieClick(movie)}
+                    className="group flex items-center gap-6 p-4 hover:bg-white/[0.03] rounded-2xl cursor-pointer transition-all border border-transparent hover:border-white/5"
+                  >
+                    <div className="relative w-24 aspect-video rounded-lg overflow-hidden flex-none">
+                      <img 
+                        src={getImageUrl(movie.backdrop_path || movie.poster_path)} 
+                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" 
+                        alt=""
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                      <p className="text-sm font-black uppercase tracking-tight text-white group-hover:text-brand-primary transition-colors truncate">
+                        {movie.title || movie.name}
+                      </p>
+                      <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">
+                        {new Date(movie.release_date || movie.first_air_date || "").getFullYear()} • {movie.media_type || "Content"}
+                      </p>
+                    </div>
+                    <ChevronLeft className="rotate-180 text-white/10 group-hover:text-white transition-all" size={16} />
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="h-64 flex flex-col items-center justify-center text-center">
+                <TrendingUp className="text-white/5 mb-4" size={48} />
+                <p className="text-white/10 font-black uppercase tracking-[0.2em] text-xs">No Stream History</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("home");
   const [discoveryType, setDiscoveryType] = useState<"movie" | "tv">("movie");
@@ -560,6 +705,11 @@ export default function App() {
   const [genrePage, setGenrePage] = useState(1);
   const [viewAllSection, setViewAllSection] = useState<{ title: string, movies: Movie[], type?: string } | null>(null);
   const [viewAllPage, setViewAllPage] = useState(1);
+  const [user] = useState({
+    name: "Anarchist_01",
+    joined: "May 2026",
+    email: "anarch@streaming.app"
+  });
   const scrollSentinelRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -1245,6 +1395,16 @@ export default function App() {
                       </div>
                     )}
                   </>
+                )}
+                {activeTab === "account" && (
+                  <AccountView 
+                    user={user}
+                    history={history}
+                    watchlist={watchlist}
+                    onCsvUpload={() => fileInputRef.current?.click()}
+                    onClearHistory={() => setHistory([])}
+                    onMovieClick={handleMovieSelect}
+                  />
                 )}
               </motion.div>
           </AnimatePresence>
