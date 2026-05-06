@@ -19,7 +19,10 @@ import {
   Trash2,
   ArchiveX,
   User,
-  Settings
+  Settings,
+  Edit2,
+  Users,
+  UserPlus
 } from "lucide-react";
 import { tmdbService, getImageUrl } from "./services/tmdb";
 import { Movie, MovieDetails, Cast } from "./types";
@@ -548,17 +551,45 @@ const AccountView = ({
   user, 
   history, 
   watchlist, 
+  friends,
   onCsvUpload, 
   onClearHistory, 
-  onMovieClick 
+  onMovieClick,
+  onUpdateName,
+  onAddFriend 
 }: { 
   user: any, 
   history: Movie[], 
   watchlist: Movie[], 
+  friends: any[],
   onCsvUpload: () => void,
   onClearHistory: () => void,
-  onMovieClick: (m: Movie) => void
+  onMovieClick: (m: Movie) => void,
+  onUpdateName: (name: string) => void,
+  onAddFriend: (name: string) => void
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [newName, setNewName] = useState(user.name);
+  const [friendName, setFriendName] = useState("");
+  const [showAddFriend, setShowAddFriend] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newName.trim()) {
+      onUpdateName(newName.trim());
+      setIsEditing(false);
+    }
+  };
+
+  const handleAddFriend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (friendName.trim()) {
+      onAddFriend(friendName.trim());
+      setFriendName("");
+      setShowAddFriend(false);
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto pb-32 pt-10">
       {/* Profile Header - Minimalist */}
@@ -571,9 +602,39 @@ const AccountView = ({
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-tr from-brand-primary to-brand-primary/40 text-brand-bg text-4xl font-black mb-4 shadow-[0_0_50px_-12px_rgba(var(--brand-primary-rgb),0.5)]">
             {user.name.charAt(0)}
           </div>
-          <h2 className="text-7xl md:text-8xl font-display font-black tracking-tighter uppercase italic text-white leading-none">
-            {user.name}
-          </h2>
+          
+          <div className="flex flex-col items-center gap-4">
+            {isEditing ? (
+              <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
+                <input
+                  autoFocus
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className="bg-white/5 border-b-2 border-brand-primary text-5xl md:text-7xl font-display font-black tracking-tighter uppercase italic text-white text-center outline-none focus:bg-white/10 transition-all px-4 py-2"
+                  placeholder="Enter Name"
+                />
+                <div className="flex gap-4">
+                  <button type="submit" className="text-[10px] font-black uppercase tracking-widest text-brand-primary hover:text-white transition-colors">Save Name</button>
+                  <button type="button" onClick={() => setIsEditing(false)} className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors">Cancel</button>
+                </div>
+              </form>
+            ) : (
+              <div className="group relative inline-block">
+                <h2 className="text-7xl md:text-8xl font-display font-black tracking-tighter uppercase italic text-white leading-none">
+                  {user.name}
+                </h2>
+                <button 
+                  onClick={() => setIsEditing(true)}
+                  className="absolute -top-4 -right-8 p-2 bg-white/5 border border-white/10 rounded-full text-white/20 hover:text-brand-primary hover:border-brand-primary/40 opacity-0 group-hover:opacity-100 transition-all"
+                  title="Edit Name"
+                >
+                  <Edit2 size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center justify-center gap-12 pt-8">
             <div className="text-center group cursor-default">
               <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] group-hover:text-brand-primary transition-colors">Watched</p>
@@ -584,12 +645,17 @@ const AccountView = ({
               <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] group-hover:text-brand-primary transition-colors">Saved</p>
               <p className="text-4xl font-display font-black text-white">{watchlist.length}</p>
             </div>
+            <div className="w-[1px] h-12 bg-white/5" />
+            <div className="text-center group cursor-default">
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] group-hover:text-brand-primary transition-colors">Friends</p>
+              <p className="text-4xl font-display font-black text-white">{friends.length}</p>
+            </div>
           </div>
         </motion.div>
       </section>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-20">
-        {/* Left Column: Actions */}
+        {/* Left Column: Actions & Friends */}
         <div className="md:col-span-4 space-y-16">
           <div className="space-y-8">
             <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] px-1">Control Center</h3>
@@ -606,6 +672,17 @@ const AccountView = ({
               </button>
 
               <button 
+                onClick={() => setShowAddFriend(true)}
+                className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/[0.03] rounded-3xl transition-all border border-transparent hover:border-white/5"
+              >
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-white mb-1 group-hover:text-brand-primary transition-colors">Find Rebels</p>
+                  <p className="text-[10px] text-zinc-500 font-bold">Add friends by ID</p>
+                </div>
+                <UserPlus size={18} className="text-white/20 group-hover:text-brand-primary transition-colors" />
+              </button>
+
+              <button 
                 onClick={onClearHistory}
                 className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/[0.03] rounded-3xl transition-all border border-transparent hover:border-white/5"
               >
@@ -615,16 +692,31 @@ const AccountView = ({
                 </div>
                 <Trash2 size={18} className="text-white/20 group-hover:text-red-500 transition-colors" />
               </button>
+            </div>
+          </div>
 
-              <button 
-                className="group flex items-center justify-between w-full p-6 text-left opacity-30 cursor-not-allowed"
-              >
-                <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-white mb-1">Preferences</p>
-                  <p className="text-[10px] text-zinc-500 font-bold">App & UI Settings</p>
-                </div>
-                <Settings size={18} className="text-white/20" />
-              </button>
+          <div className="space-y-8">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em]">Friend Network</h3>
+              <Users size={14} className="text-white/20" />
+            </div>
+            
+            <div className="space-y-6">
+              {friends.length > 0 ? (
+                friends.map((friend, idx) => (
+                  <div key={idx} className="flex items-center gap-4 group">
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center font-black text-xs text-brand-primary group-hover:bg-brand-primary group-hover:text-brand-bg transition-all">
+                      {friend.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-widest text-white">{friend.name}</p>
+                      <p className="text-[9px] text-brand-primary font-bold uppercase truncate max-w-[150px]">Watching: {friend.lastWatched}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest italic text-center py-4">No friends added yet</p>
+              )}
             </div>
           </div>
         </div>
@@ -636,6 +728,8 @@ const AccountView = ({
               <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em]">Recent Activity</h3>
               <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Live Stream History</span>
             </div>
+            
+            {/* ... rest of history logic stays same ... */}
 
             {history.length > 0 ? (
               <div className="space-y-1">
@@ -705,11 +799,39 @@ export default function App() {
   const [genrePage, setGenrePage] = useState(1);
   const [viewAllSection, setViewAllSection] = useState<{ title: string, movies: Movie[], type?: string } | null>(null);
   const [viewAllPage, setViewAllPage] = useState(1);
-  const [user] = useState({
-    name: "Anarchist_01",
-    joined: "May 2026",
-    email: "anarch@streaming.app"
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("anarch_user");
+      return saved ? JSON.parse(saved) : {
+        name: "Anarchist_01",
+        joined: "May 2026",
+        email: "anarch@streaming.app"
+      };
+    } catch {
+      return { name: "Anarchist_01", joined: "May 2026", email: "anarch@streaming.app" };
+    }
   });
+
+  useEffect(() => {
+    localStorage.setItem("anarch_user", JSON.stringify(user));
+  }, [user]);
+
+  const [friends, setFriends] = useState(() => {
+    try {
+      const saved = localStorage.getItem("anarch_friends");
+      return saved ? JSON.parse(saved) : [
+        { name: "Neo_88", lastWatched: "The Matrix Resurrections" },
+        { name: "Cypher_X", lastWatched: "John Wick: Chapter 4" }
+      ];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("anarch_friends", JSON.stringify(friends));
+  }, [friends]);
+
   const scrollSentinelRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -1401,9 +1523,16 @@ export default function App() {
                     user={user}
                     history={history}
                     watchlist={watchlist}
+                    friends={friends}
                     onCsvUpload={() => fileInputRef.current?.click()}
                     onClearHistory={() => setHistory([])}
                     onMovieClick={handleMovieSelect}
+                    onUpdateName={(name) => setUser(prev => ({ ...prev, name }))}
+                    onAddFriend={(name) => {
+                      const mockLastWatched = ["Inception", "The Matrix", "Breaking Bad", "Stranger Things", "Interstellar"];
+                      const lastWatched = mockLastWatched[Math.floor(Math.random() * mockLastWatched.length)];
+                      setFriends(prev => [...prev, { name, lastWatched }]);
+                    }}
                   />
                 )}
               </motion.div>
