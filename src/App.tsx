@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import Papa from "papaparse";
-import { 
-  Home, 
-  Search as SearchIcon, 
-  TrendingUp, 
-  Tv, 
-  Film, 
-  Plus, 
-  Menu, 
+import {
+  Home,
+  Search as SearchIcon,
+  TrendingUp,
+  Tv,
+  Film,
+  Plus,
+  Menu,
   X,
   Play,
   Info,
@@ -55,7 +55,7 @@ const ScrollAnimatedItem = ({ children, className, initial = { opacity: 0, y: 20
   );
 
   return (
-    <motion.div 
+    <motion.div
       ref={ref}
       style={{ opacity }}
       initial={initial}
@@ -67,29 +67,29 @@ const ScrollAnimatedItem = ({ children, className, initial = { opacity: 0, y: 20
   );
 };
 
-const WatchlistItem = ({ 
-  movie, 
-  onClick, 
-  onRemove 
-}: { 
-  movie: Movie, 
-  onClick: (movie: Movie) => void, 
+const WatchlistItem = ({
+  movie,
+  onClick,
+  onRemove
+}: {
+  movie: Movie,
+  onClick: (movie: Movie) => void,
   onRemove: (e: React.MouseEvent) => void,
-  key?: any 
+  key?: any
 }) => {
   return (
     <ScrollAnimatedItem className="group relative">
-      <MovieCard 
-        movie={movie} 
-        onClick={onClick} 
+      <MovieCard
+        movie={movie}
+        onClick={onClick}
         className="w-full"
       />
       <div className="absolute -bottom-4 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-30">
-        <button 
+        <button
           onClick={onRemove}
           className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 backdrop-blur-md shadow-lg transition-all active:scale-95"
         >
-          <Trash2 size={14} /> Remove 
+          <Trash2 size={14} /> Remove
         </button>
       </div>
     </ScrollAnimatedItem>
@@ -115,7 +115,7 @@ const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick }: { activ
             <span className="text-[8px] font-black tracking-[0.4em] text-brand-primary uppercase">Films & Series</span>
           </div>
         </div>
-        
+
         <div className="hidden md:flex items-center gap-2">
           {tabs.map((tab) => (
             <button
@@ -128,7 +128,7 @@ const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick }: { activ
             >
               {tab.label}
               {activeTab === tab.id && (
-                <motion.div 
+                <motion.div
                   layoutId="nav-active"
                   className="absolute inset-0 bg-white/5 border border-white/10 rounded-xl -z-10"
                 />
@@ -139,19 +139,19 @@ const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick }: { activ
       </div>
 
       <div className="flex items-center gap-4">
-        <button 
+        <button
           onClick={onSearchClick}
           className="p-2 text-white/30 hover:text-white hover:bg-white/5 rounded-lg transition-all"
           title="Search"
         >
           <SearchIcon size={20} />
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab("account")}
           className={cn(
             "flex items-center gap-2 p-2 rounded-xl transition-all border",
-            activeTab === "account" 
-              ? "bg-brand-primary/10 border-brand-primary/20 text-brand-primary shadow-lg shadow-brand-primary/10" 
+            activeTab === "account"
+              ? "bg-brand-primary/10 border-brand-primary/20 text-brand-primary shadow-lg shadow-brand-primary/10"
               : "bg-white/5 border-white/5 text-white/30 hover:text-white hover:bg-white/10"
           )}
           title="Account"
@@ -164,16 +164,16 @@ const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick }: { activ
   );
 };
 
-const SearchOverlay = ({ 
-  isOpen, 
-  onClose, 
+const SearchOverlay = ({
+  isOpen,
+  onClose,
   onMovieClick,
   query,
   setQuery,
   results
-}: { 
-  isOpen: boolean, 
-  onClose: () => void, 
+}: {
+  isOpen: boolean,
+  onClose: () => void,
   onMovieClick: (m: Movie) => void,
   query: string,
   setQuery: (q: string) => void,
@@ -182,7 +182,7 @@ const SearchOverlay = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -192,7 +192,7 @@ const SearchOverlay = ({
             <div className="flex items-center justify-center mb-16 px-4">
               <div className="relative flex-1 max-w-xl group">
                 <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-brand-primary transition-colors" size={20} />
-                <input 
+                <input
                   autoFocus
                   type="text"
                   placeholder="Search titles..."
@@ -201,7 +201,7 @@ const SearchOverlay = ({
                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-12 text-lg font-medium outline-none focus:border-brand-primary/40 focus:bg-white/10 transition-all placeholder:text-white/10"
                 />
                 {query && (
-                  <button 
+                  <button
                     onClick={() => setQuery("")}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white"
                   >
@@ -209,7 +209,7 @@ const SearchOverlay = ({
                   </button>
                 )}
               </div>
-              <button 
+              <button
                 onClick={onClose}
                 className="ml-6 p-4 text-white/30 hover:text-white transition-all flex items-center gap-2 group"
               >
@@ -229,12 +229,12 @@ const SearchOverlay = ({
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                   >
-                    <MovieCard 
-                      movie={movie} 
+                    <MovieCard
+                      movie={movie}
                       onClick={(m) => {
                         onMovieClick(m);
                         onClose();
-                      }} 
+                      }}
                       className="w-full h-full"
                     />
                   </motion.div>
@@ -262,14 +262,14 @@ const SearchOverlay = ({
 
 const MovieCard = ({ movie, onClick, className, colorful = true }: { movie: Movie, onClick: (movie: Movie) => void, className?: string, colorful?: boolean, key?: any }) => {
   return (
-    <motion.div 
+    <motion.div
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onClick(movie)}
       className={cn("relative aspect-video rounded-lg overflow-hidden cursor-pointer group bg-zinc-900 border border-white/5", className)}
     >
-      <img 
-        src={getImageUrl(movie.backdrop_path || movie.poster_path)} 
+      <img
+        src={getImageUrl(movie.backdrop_path || movie.poster_path)}
         alt={movie.title || movie.name}
         className={cn(
           "w-full h-full object-cover transition-all duration-700 ease-in-out scale-105 group-hover:scale-100 opacity-60 group-hover:opacity-100",
@@ -297,7 +297,7 @@ const MovieSection = ({ title, movies, onMovieClick, onSeeAll, actions }: { titl
           {actions}
         </div>
         {onSeeAll && (
-          <span 
+          <span
             onClick={onSeeAll}
             className="text-[10px] text-brand-primary font-black uppercase tracking-widest cursor-pointer hover:text-white transition-colors"
           >
@@ -356,205 +356,205 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist }: { movie: M
 
   return (
     <>
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 1.1 }}
-      className="fixed inset-0 z-[60] bg-brand-bg overflow-y-auto no-scrollbar"
-    >
-      <div className="relative h-[60vh] md:h-[80vh] w-full">
-            <img 
-              src={getImageUrl(movie.backdrop_path, "original")} 
-              alt={movie.title || movie.name}
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-brand-bg via-brand-bg/40 to-transparent" />
-            
-            <button 
-              onClick={onBack}
-              className="absolute top-8 left-8 p-3 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition-all z-10"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 1.1 }}
+        className="fixed inset-0 z-[60] bg-brand-bg overflow-y-auto no-scrollbar"
+      >
+        <div className="relative h-[60vh] md:h-[80vh] w-full">
+          <img
+            src={getImageUrl(movie.backdrop_path, "original")}
+            alt={movie.title || movie.name}
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-bg via-brand-bg/40 to-transparent" />
+
+          <button
+            onClick={onBack}
+            className="absolute top-8 left-8 p-3 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition-all z-10"
+          >
+            <ChevronLeft size={24} />
+          </button>
+
+          <div className="absolute bottom-12 left-8 md:left-16 max-w-2xl">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-4xl md:text-7xl font-display font-black tracking-tight mb-4"
             >
-              <ChevronLeft size={24} />
-            </button>
+              {movie.title || movie.name}
+            </motion.h1>
 
-            <div className="absolute bottom-12 left-8 md:left-16 max-w-2xl">
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-4xl md:text-7xl font-display font-black tracking-tight mb-4"
-              >
-                {movie.title || movie.name}
-              </motion.h1>
-              
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex items-center gap-6 mb-6 text-zinc-300 font-medium"
-              >
-                <span className="flex items-center gap-1 text-yellow-500">
-                  ★ {movie.vote_average?.toFixed(1) || "N/A"}
-                </span>
-                <span>{new Date(movie.release_date || movie.first_air_date || "").getFullYear()}</span>
-                <span>{details?.runtime ? `${details.runtime} min` : `${details?.number_of_seasons || 1} Seasons`}</span>
-                <span className="px-2 py-0.5 border border-zinc-600 rounded text-xs uppercase tracking-wider">HD</span>
-              </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex items-center gap-6 mb-6 text-zinc-300 font-medium"
+            >
+              <span className="flex items-center gap-1 text-yellow-500">
+                ★ {movie.vote_average?.toFixed(1) || "N/A"}
+              </span>
+              <span>{new Date(movie.release_date || movie.first_air_date || "").getFullYear()}</span>
+              <span>{details?.runtime ? `${details.runtime} min` : `${details?.number_of_seasons || 1} Seasons`}</span>
+              <span className="px-2 py-0.5 border border-zinc-600 rounded text-xs uppercase tracking-wider">HD</span>
+            </motion.div>
 
-              <motion.p 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-zinc-400 text-lg md:text-xl line-clamp-3 mb-8"
-              >
-                {movie.overview}
-              </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-zinc-400 text-lg md:text-xl line-clamp-3 mb-8"
+            >
+              {movie.overview}
+            </motion.p>
 
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => {
-                    if (details?.imdb_id) {
-                      window.open(`https://www.playimdb.com/title/${details.imdb_id}/`, '_blank');
-                    } else {
-                      const query = movie.title || movie.name;
-                      window.open(`https://www.playimdb.com/find?q=${encodeURIComponent(query!)}`, '_blank');
-                    }
-                  }}
-                  className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-bold text-lg hover:bg-zinc-200 transition-all active:scale-95 shadow-xl"
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => {
+                  if (details?.imdb_id) {
+                    window.open(`https://www.playimdb.com/title/${details.imdb_id}/`, '_blank');
+                  } else {
+                    const query = movie.title || movie.name;
+                    window.open(`https://www.playimdb.com/find?q=${encodeURIComponent(query!)}`, '_blank');
+                  }
+                }}
+                className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-bold text-lg hover:bg-zinc-200 transition-all active:scale-95 shadow-xl"
+              >
+                <Play size={24} className="fill-black" /> Play Now
+              </button>
+              {trailerKey && (
+                <button
+                  onClick={() => setShowTrailer(true)}
+                  className="flex items-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-2xl font-bold text-lg hover:bg-white/20 transition-all active:scale-95 shadow-xl"
                 >
-                  <Play size={24} className="fill-black" /> Play Now
+                  Watch Trailer
                 </button>
-                {trailerKey && (
-                  <button 
-                    onClick={() => setShowTrailer(true)}
-                    className="flex items-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-2xl font-bold text-lg hover:bg-white/20 transition-all active:scale-95 shadow-xl"
-                  >
-                    Watch Trailer
-                  </button>
+              )}
+              <button
+                onClick={() => onToggleWatchlist(movie)}
+                className={cn(
+                  "flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-lg transition-all active:scale-95 shadow-xl backdrop-blur-md border border-white/5",
+                  isInWatchlist
+                    ? "bg-brand-primary text-white hover:bg-brand-primary/90"
+                    : "bg-zinc-800/80 text-white hover:bg-zinc-700"
                 )}
-                <button 
-                  onClick={() => onToggleWatchlist(movie)}
-                  className={cn(
-                    "flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-lg transition-all active:scale-95 shadow-xl backdrop-blur-md border border-white/5",
-                    isInWatchlist 
-                      ? "bg-brand-primary text-white hover:bg-brand-primary/90" 
-                      : "bg-zinc-800/80 text-white hover:bg-zinc-700"
-                  )}
-                >
-                  {isInWatchlist ? <Check size={24} /> : <Plus size={24} />}
-                  {isInWatchlist ? "In My List" : "Add to List"}
-                </button>
-              </div>
+              >
+                {isInWatchlist ? <Check size={24} /> : <Plus size={24} />}
+                {isInWatchlist ? "In My List" : "Add to List"}
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Content */}
-          <div className="px-8 md:px-16 py-12 -mt-20 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              {/* Main Content */}
-              <div className="lg:col-span-2">
-                <h3 className="text-2xl font-display font-bold mb-6">About</h3>
-                <div className="text-zinc-400 text-lg leading-relaxed mb-12">
-                  {details?.tagline && <span className="italic block mb-4 text-zinc-100 leading-tight font-display text-xl font-medium">"{details.tagline}"</span>}
-                  <p>{movie.overview}</p>
-                </div>
+        {/* Content */}
+        <div className="px-8 md:px-16 py-12 -mt-20 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            {/* Main Content */}
+            <div className="lg:col-span-2">
+              <h3 className="text-2xl font-display font-bold mb-6">About</h3>
+              <div className="text-zinc-400 text-lg leading-relaxed mb-12">
+                {details?.tagline && <span className="italic block mb-4 text-zinc-100 leading-tight font-display text-xl font-medium">"{details.tagline}"</span>}
+                <p>{movie.overview}</p>
+              </div>
 
-                <h3 className="text-2xl font-display font-bold mb-6">Top Cast</h3>
-                <div className="flex gap-6 overflow-x-auto no-scrollbar pb-6">
-                  {cast.map((actor) => (
-                    <a 
-                      key={actor.id} 
-                      href={`https://en.wikipedia.org/wiki/${encodeURIComponent(actor.name.replace(/ /g, '_'))}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-none w-32 text-center group/actor block cursor-pointer transition-transform hover:-translate-y-1"
-                    >
-                      <div className="w-32 h-32 rounded-full overflow-hidden mb-3 border-2 border-zinc-800 ring-2 ring-transparent group-hover/actor:ring-brand-primary transition-all shadow-lg">
-                        <img 
-                          src={getImageUrl(actor.profile_path)} 
-                          alt={actor.name} 
-                          className="w-full h-full object-cover group-hover/actor:scale-110 transition-transform duration-500"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                      <h5 className="font-bold text-sm line-clamp-1 group-hover/actor:text-brand-primary transition-colors">{actor.name}</h5>
-                      <p className="text-zinc-500 text-xs mt-1 line-clamp-1">{actor.character}</p>
-                    </a>
+              <h3 className="text-2xl font-display font-bold mb-6">Top Cast</h3>
+              <div className="flex gap-6 overflow-x-auto no-scrollbar pb-6">
+                {cast.map((actor) => (
+                  <a
+                    key={actor.id}
+                    href={`https://en.wikipedia.org/wiki/${encodeURIComponent(actor.name.replace(/ /g, '_'))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-none w-32 text-center group/actor block cursor-pointer transition-transform hover:-translate-y-1"
+                  >
+                    <div className="w-32 h-32 rounded-full overflow-hidden mb-3 border-2 border-zinc-800 ring-2 ring-transparent group-hover/actor:ring-brand-primary transition-all shadow-lg">
+                      <img
+                        src={getImageUrl(actor.profile_path)}
+                        alt={actor.name}
+                        className="w-full h-full object-cover group-hover/actor:scale-110 transition-transform duration-500"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    <h5 className="font-bold text-sm line-clamp-1 group-hover/actor:text-brand-primary transition-colors">{actor.name}</h5>
+                    <p className="text-zinc-500 text-xs mt-1 line-clamp-1">{actor.character}</p>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Sidebar Area (Genres etc) */}
+            <div className="space-y-8">
+              <div>
+                <h4 className="text-zinc-500 font-bold text-sm uppercase tracking-widest mb-4">Genres</h4>
+                <div className="flex flex-wrap gap-2">
+                  {details?.genres.map((genre) => (
+                    <span key={genre.id} className="px-4 py-2 bg-zinc-900 rounded-full text-zinc-300 text-sm font-medium border border-zinc-800">
+                      {genre.name}
+                    </span>
                   ))}
                 </div>
               </div>
 
-              {/* Sidebar Area (Genres etc) */}
-              <div className="space-y-8">
-                <div>
-                  <h4 className="text-zinc-500 font-bold text-sm uppercase tracking-widest mb-4">Genres</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {details?.genres.map((genre) => (
-                      <span key={genre.id} className="px-4 py-2 bg-zinc-900 rounded-full text-zinc-300 text-sm font-medium border border-zinc-800">
-                        {genre.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="text-zinc-500 font-bold text-sm uppercase tracking-widest mb-4">Available on</h4>
-                  <div className="p-6 bg-zinc-900/50 rounded-3xl border border-zinc-800 flex items-center justify-center">
-                    <span className="text-zinc-500">Vidsrc HD Stream Available</span>
-                  </div>
+              <div>
+                <h4 className="text-zinc-500 font-bold text-sm uppercase tracking-widest mb-4">Available on</h4>
+                <div className="p-6 bg-zinc-900/50 rounded-3xl border border-zinc-800 flex items-center justify-center">
+                  <span className="text-zinc-500">Vidsrc HD Stream Available</span>
                 </div>
               </div>
             </div>
           </div>
-    </motion.div>
+        </div>
+      </motion.div>
 
-    <AnimatePresence>
-      {showTrailer && trailerKey && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setShowTrailer(false)}
-          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-10"
-        >
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10"
+      <AnimatePresence>
+        {showTrailer && trailerKey && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowTrailer(false)}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-10"
           >
-            <button 
-              onClick={() => setShowTrailer(false)}
-              className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-white/10 text-white rounded-full transition-all z-10"
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10"
             >
-              <X size={24} />
-            </button>
-            <iframe
-              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
-              title="Trailer"
-              className="w-full h-full"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+              <button
+                onClick={() => setShowTrailer(false)}
+                className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-white/10 text-white rounded-full transition-all z-10"
+              >
+                <X size={24} />
+              </button>
+              <iframe
+                src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
+                title="Trailer"
+                className="w-full h-full"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
     </>
   );
 };
 
-const FriendProfileView = ({ 
-  friend, 
-  onBack, 
-  onMovieClick 
-}: { 
-  friend: any, 
-  onBack: () => void, 
-  onMovieClick: (m: Movie) => void 
+const FriendProfileView = ({
+  friend,
+  onBack,
+  onMovieClick
+}: {
+  friend: any,
+  onBack: () => void,
+  onMovieClick: (m: Movie) => void
 }) => {
   // Generate stable mock data for the friend based on their name
   const [mockWatched] = useState(() => friend.watched || []);
@@ -562,7 +562,7 @@ const FriendProfileView = ({
 
   return (
     <div className="max-w-5xl mx-auto pb-32 pt-10">
-      <button 
+      <button
         onClick={onBack}
         className="mb-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-brand-primary transition-all group"
       >
@@ -582,7 +582,7 @@ const FriendProfileView = ({
             {friend.name}
           </h2>
           <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.5em] italic opacity-50">Anarch Rebel Member</p>
-          
+
           <div className="flex items-center justify-center gap-12 pt-8">
             <div className="text-center">
               <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Watched</p>
@@ -602,12 +602,12 @@ const FriendProfileView = ({
           <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] px-1 text-center md:text-left">Currently Streaming</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {mockWatched.slice(0, 3).map(movie => (
-              <MovieCard 
-                key={movie.id} 
-                movie={movie} 
-                onClick={onMovieClick} 
-                className="w-full" 
-                colorful={true} 
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                onClick={onMovieClick}
+                className="w-full"
+                colorful={true}
               />
             ))}
           </div>
@@ -617,12 +617,12 @@ const FriendProfileView = ({
           <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] px-1 text-center md:text-left">Wishlist Collection</h3>
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4">
             {mockWishlist.map(movie => (
-              <MovieCard 
-                key={movie.id} 
-                movie={movie} 
-                onClick={onMovieClick} 
-                className="flex-none w-64 md:w-80" 
-                colorful={false} 
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                onClick={onMovieClick}
+                className="flex-none w-64 md:w-80"
+                colorful={false}
               />
             ))}
           </div>
@@ -632,21 +632,21 @@ const FriendProfileView = ({
   );
 };
 
-const AccountView = ({ 
-  user, 
-  history, 
-  watchlist, 
+const AccountView = ({
+  user,
+  history,
+  watchlist,
   friends,
-  onCsvUpload, 
-  onClearHistory, 
+  onCsvUpload,
+  onClearHistory,
   onMovieClick,
   onUpdateName,
   onAddFriend,
-  onFriendClick 
-}: { 
-  user: any, 
-  history: Movie[], 
-  watchlist: Movie[], 
+  onFriendClick
+}: {
+  user: any,
+  history: Movie[],
+  watchlist: Movie[],
   friends: any[],
   onCsvUpload: () => void,
   onClearHistory: () => void,
@@ -689,7 +689,7 @@ const AccountView = ({
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-tr from-brand-primary to-brand-primary/40 text-brand-bg text-4xl font-black mb-4 shadow-[0_0_50px_-12px_rgba(var(--brand-primary-rgb),0.5)]">
             {user.name.charAt(0)}
           </div>
-          
+
           <div className="flex flex-col items-center gap-4">
             {isEditing ? (
               <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
@@ -711,7 +711,7 @@ const AccountView = ({
                 <h2 className="text-7xl md:text-8xl font-display font-black tracking-tighter uppercase italic text-white leading-none">
                   {user.name}
                 </h2>
-                <button 
+                <button
                   onClick={() => setIsEditing(true)}
                   className="absolute -top-4 -right-8 p-2 bg-white/5 border border-white/10 rounded-full text-white/20 hover:text-brand-primary hover:border-brand-primary/40 opacity-0 group-hover:opacity-100 transition-all"
                   title="Edit Name"
@@ -747,7 +747,7 @@ const AccountView = ({
           <div className="space-y-8">
             <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] px-1">Control Center</h3>
             <div className="flex flex-col gap-4">
-              <button 
+              <button
                 onClick={onCsvUpload}
                 className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/[0.03] rounded-3xl transition-all border border-transparent hover:border-white/5"
               >
@@ -758,7 +758,7 @@ const AccountView = ({
                 <Upload size={18} className="text-white/20 group-hover:text-brand-primary transition-colors" />
               </button>
 
-              <button 
+              <button
                 onClick={() => setShowAddFriend(true)}
                 className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/[0.03] rounded-3xl transition-all border border-transparent hover:border-white/5"
               >
@@ -769,7 +769,7 @@ const AccountView = ({
                 <UserPlus size={18} className="text-white/20 group-hover:text-brand-primary transition-colors" />
               </button>
 
-              <button 
+              <button
                 onClick={onClearHistory}
                 className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/[0.03] rounded-3xl transition-all border border-transparent hover:border-white/5"
               >
@@ -787,12 +787,12 @@ const AccountView = ({
               <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em]">Friend Network</h3>
               <Users size={14} className="text-white/20" />
             </div>
-            
+
             <div className="space-y-6">
               {friends.length > 0 ? (
                 friends.map((friend, idx) => (
-                  <div 
-                    key={idx} 
+                  <div
+                    key={idx}
                     onClick={() => onFriendClick(friend)}
                     className="flex items-center gap-4 group cursor-pointer"
                   >
@@ -819,13 +819,13 @@ const AccountView = ({
               <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em]">Recent Activity</h3>
               <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Live Stream History</span>
             </div>
-            
+
             {/* ... rest of history logic stays same ... */}
 
             {history.length > 0 ? (
               <div className="space-y-1">
                 {history.slice(0, 10).map((movie, idx) => (
-                  <motion.div 
+                  <motion.div
                     key={movie.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -834,9 +834,9 @@ const AccountView = ({
                     className="group flex items-center gap-6 p-4 hover:bg-white/[0.03] rounded-2xl cursor-pointer transition-all border border-transparent hover:border-white/5"
                   >
                     <div className="relative w-24 aspect-video rounded-lg overflow-hidden flex-none">
-                      <img 
-                        src={getImageUrl(movie.backdrop_path || movie.poster_path)} 
-                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" 
+                      <img
+                        src={getImageUrl(movie.backdrop_path || movie.poster_path)}
+                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"
                         alt=""
                         referrerPolicy="no-referrer"
                       />
@@ -913,14 +913,14 @@ export default function App() {
     try {
       const saved = localStorage.getItem("anarch_friends");
       const defaultFriends = [
-        { 
-          name: "Neo_88", 
+        {
+          name: "Neo_88",
           lastWatched: "The Matrix Resurrections",
           watched: trending.slice(0, 5),
           wishlist: popular.slice(0, 8)
         },
-        { 
-          name: "Cypher_X", 
+        {
+          name: "Cypher_X",
           lastWatched: "John Wick: Chapter 4",
           watched: series.slice(0, 3),
           wishlist: topRated.slice(0, 10)
@@ -1041,7 +1041,7 @@ export default function App() {
       complete: async (results) => {
         const rows = results.data as any[];
         const newMovies: Movie[] = [];
-        
+
         for (const row of rows) {
           const query = row.title || row.Title || row.name || row.Name;
           if (query) {
@@ -1109,13 +1109,13 @@ export default function App() {
         setTopRated(uniqueMovies(topData));
         setUpcoming(uniqueMovies(upData));
         setSeries(uniqueMovies(seriesData));
-        
+
         // Enrich genres with top movie backdrops, ensuring unique selection
         const usedBackdropPaths = new Set<string>();
         const enrichedGenres = await Promise.all(genreData.map(async (g) => {
           const topMovies = await tmdbService.getTopMoviesForGenre(g.id, discoveryType);
           const backdrops: string[] = [];
-          
+
           for (const movie of topMovies) {
             const path = movie.backdrop_path || movie.poster_path;
             if (path && !usedBackdropPaths.has(path)) {
@@ -1225,7 +1225,7 @@ export default function App() {
   if (isLoading) {
     return (
       <div className="h-screen bg-brand-bg flex items-center justify-center">
-        <motion.div 
+        <motion.div
           animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
           transition={{ repeat: Infinity, duration: 2 }}
           className="flex flex-col items-center gap-4"
@@ -1248,9 +1248,9 @@ export default function App() {
           <p className="text-zinc-400 mb-8 leading-relaxed">
             Please add your <span className="text-white font-bold">VITE_TMDB_API_KEY</span> in the Secrets panel to access movie data.
           </p>
-          <a 
-            href="https://www.themoviedb.org/settings/api" 
-            target="_blank" 
+          <a
+            href="https://www.themoviedb.org/settings/api"
+            target="_blank"
             rel="noopener noreferrer"
             className="inline-block w-full py-4 bg-brand-primary text-white font-bold rounded-2xl hover:bg-brand-primary/80 transition-all active:scale-95"
           >
@@ -1268,14 +1268,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-brand-bg text-white selection:bg-brand-primary selection:text-white overflow-x-hidden">
-      <Navbar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         onCsvUpload={() => fileInputRef.current?.click()}
         onSearchClick={() => setShowSearchOverlay(true)}
       />
 
-      <SearchOverlay 
+      <SearchOverlay
         isOpen={showSearchOverlay}
         onClose={() => {
           setShowSearchOverlay(false);
@@ -1287,374 +1287,374 @@ export default function App() {
         onMovieClick={handleMovieSelect}
       />
 
-      <input 
-        type="file" 
-        accept=".csv" 
-        ref={fileInputRef} 
-        className="hidden" 
-        onChange={handleCsvUpload} 
+      <input
+        type="file"
+        accept=".csv"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleCsvUpload}
       />
 
       <main className="min-h-screen pt-16 transition-all duration-300 flex flex-col relative overflow-x-hidden">
         <div className="flex-1 px-10 py-10 space-y-16 overflow-x-hidden">
           <AnimatePresence mode="wait">
-            <motion.div 
+            <motion.div
               key={activeTab}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-                {activeTab === "home" && featured && (
-                  <section 
-                    className="relative h-[60vh] min-h-[500px] w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden group cursor-pointer -mt-10 mb-16"
-                    onClick={() => handleMovieSelect(featured)}
-                  >
-                    <img 
-                      src={getImageUrl(featured.backdrop_path, "original")} 
-                      alt="Featured Movie"
-                      className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-1000"
-                      referrerPolicy="no-referrer"
+              {activeTab === "home" && featured && (
+                <section
+                  className="relative h-[60vh] min-h-[500px] w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden group cursor-pointer -mt-10 mb-16"
+                  onClick={() => handleMovieSelect(featured)}
+                >
+                  <img
+                    src={getImageUrl(featured.backdrop_path, "original")}
+                    alt="Featured Movie"
+                    className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-1000"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-brand-bg to-transparent" />
+
+                  <div className="absolute bottom-20 left-10 md:left-20 max-w-xl z-20">
+                    <span className="px-3 py-1 bg-brand-primary text-[10px] font-bold rounded uppercase tracking-widest mb-4 inline-block">Featured Production</span>
+                    <h2 className="text-7xl font-black text-white mb-4 leading-none uppercase tracking-tighter drop-shadow-2xl">{featured.title || featured.name}</h2>
+                    <p className="text-white/80 text-lg mb-8 line-clamp-2 max-w-md drop-shadow">{featured.overview}</p>
+                    <div className="flex gap-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlayNow(featured);
+                        }}
+                        className="px-10 py-4 bg-white text-black font-black rounded text-sm uppercase tracking-widest hover:bg-zinc-200 transition-all active:scale-95"
+                      >
+                        Play Now
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMovieSelect(featured);
+                        }}
+                        className="px-10 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white font-black rounded text-sm uppercase tracking-widest hover:bg-white/20 transition-all active:scale-95"
+                      >
+                        Details
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* Dynamic Content based on tab */}
+              {activeTab === "home" && (
+                <>
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Trending Global"
+                      movies={trending}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Trending Global", trending)}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-brand-bg to-transparent" />
-                    
-                    <div className="absolute bottom-20 left-10 md:left-20 max-w-xl z-20">
-                      <span className="px-3 py-1 bg-brand-primary text-[10px] font-bold rounded uppercase tracking-widest mb-4 inline-block">Featured Production</span>
-                      <h2 className="text-7xl font-black text-white mb-4 leading-none uppercase tracking-tighter drop-shadow-2xl">{featured.title || featured.name}</h2>
-                      <p className="text-white/80 text-lg mb-8 line-clamp-2 max-w-md drop-shadow">{featured.overview}</p>
-                      <div className="flex gap-4">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePlayNow(featured);
-                          }}
-                          className="px-10 py-4 bg-white text-black font-black rounded text-sm uppercase tracking-widest hover:bg-zinc-200 transition-all active:scale-95"
-                        >
-                          Play Now
-                        </button>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMovieSelect(featured);
-                          }}
-                          className="px-10 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white font-black rounded text-sm uppercase tracking-widest hover:bg-white/20 transition-all active:scale-95"
-                        >
-                          Details
-                        </button>
-                      </div>
-                    </div>
-                  </section>
-                )}
-
-                {/* Dynamic Content based on tab */}
-                {activeTab === "home" && (
-                  <>
-                    <ScrollAnimatedItem>
-                      <MovieSection 
-                        title="Trending Global" 
-                        movies={trending} 
-                        onMovieClick={handleMovieSelect} 
-                        onSeeAll={() => openSeeAll("Trending Global", trending)}
-                      />
-                    </ScrollAnimatedItem>
-                    <ScrollAnimatedItem>
-                      <MovieSection 
-                        title="Popular Movies" 
-                        movies={popular} 
-                        onMovieClick={handleMovieSelect} 
-                        onSeeAll={() => openSeeAll("Popular Movies", popular)}
-                      />
-                    </ScrollAnimatedItem>
-                    <ScrollAnimatedItem>
-                      <MovieSection 
-                        title="Series Archive" 
-                        movies={series} 
-                        onMovieClick={handleMovieSelect} 
-                        onSeeAll={() => openSeeAll("Series Archive", series)}
-                      />
-                    </ScrollAnimatedItem>
-                    <ScrollAnimatedItem>
-                      <MovieSection 
-                        title="Top Rated Content" 
-                        movies={topRated} 
-                        onMovieClick={handleMovieSelect} 
-                        onSeeAll={() => openSeeAll("Top Rated Content", topRated)}
-                      />
-                    </ScrollAnimatedItem>
-                    <ScrollAnimatedItem>
-                      <MovieSection 
-                        title="Coming Soon" 
-                        movies={upcoming} 
-                        onMovieClick={handleMovieSelect} 
-                        onSeeAll={() => openSeeAll("Coming Soon", upcoming)}
-                      />
-                    </ScrollAnimatedItem>
-                  </>
-                )}
-                {activeTab === "discovery" && (
-                  <div className="space-y-12">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
-                      <div className="flex flex-col gap-2">
-                        <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em]">Discovery Categories</h2>
-                        <div className="flex bg-white/5 p-1 rounded-xl w-fit">
-                          <button 
-                            onClick={() => {
-                              setDiscoveryType("movie");
-                              setSelectedGenre(null);
-                            }}
-                            className={cn(
-                              "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                              discoveryType === "movie" ? "bg-brand-primary text-white shadow-lg" : "text-white/40 hover:text-white"
-                            )}
-                          >
-                            Movies
-                          </button>
-                          <button 
-                            onClick={() => {
-                              setDiscoveryType("tv");
-                              setSelectedGenre(null);
-                            }}
-                            className={cn(
-                              "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                              discoveryType === "tv" ? "bg-brand-primary text-white shadow-lg" : "text-white/40 hover:text-white"
-                            )}
-                          >
-                            Series
-                          </button>
-                        </div>
-                      </div>
-                      <div className="relative w-full md:w-72 group">
-                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-brand-primary" size={16} />
-                        <input 
-                          type="text"
-                          placeholder="Search genres..."
-                          value={genreSearchQuery}
-                          onChange={(e) => setGenreSearchQuery(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-brand-primary/50 transition-all font-medium"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {genres.filter(g => g.name.toLowerCase().includes(genreSearchQuery.toLowerCase())).map((genre) => (
-                        <motion.button
-                          key={genre.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
+                  </ScrollAnimatedItem>
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Popular Movies"
+                      movies={popular}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Popular Movies", popular)}
+                    />
+                  </ScrollAnimatedItem>
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Series Archive"
+                      movies={series}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Series Archive", series)}
+                    />
+                  </ScrollAnimatedItem>
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Top Rated Content"
+                      movies={topRated}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Top Rated Content", topRated)}
+                    />
+                  </ScrollAnimatedItem>
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Coming Soon"
+                      movies={upcoming}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Coming Soon", upcoming)}
+                    />
+                  </ScrollAnimatedItem>
+                </>
+              )}
+              {activeTab === "discovery" && (
+                <div className="space-y-12">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
+                    <div className="flex flex-col gap-2">
+                      <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em]">Discovery Categories</h2>
+                      <div className="flex bg-white/5 p-1 rounded-xl w-fit">
+                        <button
                           onClick={() => {
-                            setSelectedGenre(genre);
-                            setTimeout(() => {
-                              document.getElementById('genre-results')?.scrollIntoView({ behavior: 'smooth' });
-                            }, 100);
+                            setDiscoveryType("movie");
+                            setSelectedGenre(null);
                           }}
                           className={cn(
-                            "relative w-full aspect-[16/6] rounded-2xl overflow-hidden group border transition-all",
-                            selectedGenre?.id === genre.id ? "border-brand-primary shadow-lg shadow-brand-primary/20 scale-102" : "border-white/5"
+                            "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                            discoveryType === "movie" ? "bg-brand-primary text-white shadow-lg" : "text-white/40 hover:text-white"
                           )}
                         >
-                          <div className="absolute inset-0 flex gap-[1px]">
-                            {genre.backdrops && genre.backdrops.length > 0 ? (
-                              genre.backdrops.map((backdrop, idx) => (
-                                <div 
-                                  key={idx} 
-                                  className="flex-1 relative overflow-hidden"
-                                >
-                                  <img 
-                                    src={getImageUrl(backdrop)}
-                                    alt={genre.name}
-                                    className={cn(
-                                      "absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110",
-                                      idx === 0 ? "delay-0" : idx === 1 ? "delay-75" : "delay-150"
-                                    )}
-                                  />
-                                </div>
-                              ))
-                            ) : (
-                              <div className="absolute inset-0 bg-zinc-800" />
-                            )}
-                          </div>
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                          <span className="absolute bottom-4 left-4 right-4 font-black uppercase text-[10px] tracking-widest text-left line-clamp-2">{genre.name}</span>
-                        </motion.button>
-                      ))}
-                    </div>
-
-                    {selectedGenre && (
-                      <div id="genre-results" className="pt-12 border-t border-white/5 space-y-8">
-                        <div className="flex items-center justify-between px-2">
-                          <h3 className="text-2xl font-display font-black text-white italic uppercase tracking-tighter">
-                            {selectedGenre.name} <span className="text-brand-primary text-sm not-italic ml-2 opacity-50">Results</span>
-                          </h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                          {genreMovies.map(movie => (
-                            <ScrollAnimatedItem key={movie.id}>
-                              <MovieCard movie={movie} onClick={handleMovieSelect} className="w-full" />
-                            </ScrollAnimatedItem>
-                          ))}
-                        </div>
-
-                        <div className="flex justify-center pt-8 pb-32">
-                          <button 
-                            onClick={loadMoreGenreMovies}
-                            className="px-12 py-4 bg-brand-primary/10 border border-brand-primary/20 text-brand-primary font-black rounded uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all shadow-lg shadow-brand-primary/10"
-                          >
-                            More {selectedGenre.name} Results
-                          </button>
-                        </div>
+                          Movies
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDiscoveryType("tv");
+                            setSelectedGenre(null);
+                          }}
+                          className={cn(
+                            "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                            discoveryType === "tv" ? "bg-brand-primary text-white shadow-lg" : "text-white/40 hover:text-white"
+                          )}
+                        >
+                          Series
+                        </button>
                       </div>
-                    )}
+                    </div>
+                    <div className="relative w-full md:w-72 group">
+                      <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-brand-primary" size={16} />
+                      <input
+                        type="text"
+                        placeholder="Search genres..."
+                        value={genreSearchQuery}
+                        onChange={(e) => setGenreSearchQuery(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-brand-primary/50 transition-all font-medium"
+                      />
+                    </div>
                   </div>
-                )}
-                {activeTab === "movies" && (
-                  <>
-                    <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em] mb-8 px-2">Movies Library</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {popular.map(movie => (
-                        <ScrollAnimatedItem key={movie.id}>
-                          <MovieCard movie={movie} onClick={handleMovieSelect} className="w-full" />
-                        </ScrollAnimatedItem>
-                      ))}
-                    </div>
-                    <div className="flex justify-center pt-8">
-                      <button 
-                        onClick={loadMore}
-                        className="px-12 py-4 bg-white/5 border border-white/10 text-white font-black rounded uppercase tracking-widest hover:bg-white/10 transition-all"
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {genres.filter(g => g.name.toLowerCase().includes(genreSearchQuery.toLowerCase())).map((genre) => (
+                      <motion.button
+                        key={genre.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          setSelectedGenre(genre);
+                          setTimeout(() => {
+                            document.getElementById('genre-results')?.scrollIntoView({ behavior: 'smooth' });
+                          }, 100);
+                        }}
+                        className={cn(
+                          "relative w-full aspect-[16/6] rounded-2xl overflow-hidden group border transition-all",
+                          selectedGenre?.id === genre.id ? "border-brand-primary shadow-lg shadow-brand-primary/20 scale-102" : "border-white/5"
+                        )}
                       >
-                        Load More Movies
-                      </button>
-                    </div>
-                  </>
-                )}
-                {activeTab === "tv" && (
-                  <>
-                    <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em] mb-8 px-2">Series Archive</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {series.map(movie => (
-                        <ScrollAnimatedItem key={movie.id}>
-                          <MovieCard movie={movie} onClick={handleMovieSelect} className="w-full" />
-                        </ScrollAnimatedItem>
-                      ))}
-                    </div>
-                    <div className="flex justify-center pt-8">
-                      <button 
-                        onClick={loadMore}
-                        className="px-12 py-4 bg-white/5 border border-white/10 text-white font-black rounded uppercase tracking-widest hover:bg-white/10 transition-all"
-                      >
-                        Load More Series
-                      </button>
-                    </div>
-                  </>
-                )}
-                {activeTab === "watchlist" && (
-                  <div className="space-y-12">
-                    <div className="flex items-center justify-between px-2">
-                      <div className="flex items-center gap-6">
-                        <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em]">My Collection</h2>
-                        <div className="flex items-center gap-3">
-                          <button 
-                            onClick={pickRandomWatchlist}
-                            className="flex items-center gap-3 px-6 py-2.5 bg-brand-primary text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-primary/80 transition-all active:scale-95 shadow-lg shadow-brand-primary/20"
-                          >
-                            <Dice5 size={16} /> Random Pick
-                          </button>
-                          
-                          {watchlist.length > 0 && (
-                            <button 
-                              onClick={() => setShowClearConfirm(true)}
-                              className="flex items-center gap-2 px-6 py-2.5 bg-white/5 hover:bg-red-500 hover:text-white text-white/40 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
-                            >
-                              <ArchiveX size={16} /> Clear All
-                            </button>
+                        <div className="absolute inset-0 flex gap-[1px]">
+                          {genre.backdrops && genre.backdrops.length > 0 ? (
+                            genre.backdrops.map((backdrop, idx) => (
+                              <div
+                                key={idx}
+                                className="flex-1 relative overflow-hidden"
+                              >
+                                <img
+                                  src={getImageUrl(backdrop)}
+                                  alt={genre.name}
+                                  className={cn(
+                                    "absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110",
+                                    idx === 0 ? "delay-0" : idx === 1 ? "delay-75" : "delay-150"
+                                  )}
+                                />
+                              </div>
+                            ))
+                          ) : (
+                            <div className="absolute inset-0 bg-zinc-800" />
                           )}
                         </div>
-                      </div>
-                      <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest">{watchlist.length} Titles Saved</p>
-                    </div>
-                    
-                    {watchlist.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-24 gap-x-8 pb-32">
-                        {watchlist.map((movie) => (
-                          <WatchlistItem 
-                            key={movie.id}
-                            movie={movie}
-                            onClick={handleMovieSelect}
-                            onRemove={(e) => {
-                              e.stopPropagation();
-                              removeFromWatchlist(movie.id);
-                            }}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="h-96 flex flex-col items-center justify-center text-center">
-                        <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
-                          <Plus className="text-white/20" size={32} />
-                        </div>
-                        <h3 className="text-xl font-display font-bold mb-2">Your collection is empty</h3>
-                        <p className="text-white/40 max-w-xs">Start adding movies or series to build your ultimate watchlist.</p>
-                      </div>
-                    )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                        <span className="absolute bottom-4 left-4 right-4 font-black uppercase text-[10px] tracking-widest text-left line-clamp-2">{genre.name}</span>
+                      </motion.button>
+                    ))}
                   </div>
-                )}
-                {activeTab === "trending" && (
-                  <>
-                    <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em] mb-8 px-2">Viewing History</h2>
-                    {history.length > 0 ? (
+
+                  {selectedGenre && (
+                    <div id="genre-results" className="pt-12 border-t border-white/5 space-y-8">
+                      <div className="flex items-center justify-between px-2">
+                        <h3 className="text-2xl font-display font-black text-white italic uppercase tracking-tighter">
+                          {selectedGenre.name} <span className="text-brand-primary text-sm not-italic ml-2 opacity-50">Results</span>
+                        </h3>
+                      </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {history.map(movie => (
-                          <div key={movie.id}>
-                            <MovieCard movie={movie} onClick={handleMovieSelect} className="w-full" colorful={false} />
-                          </div>
+                        {genreMovies.map(movie => (
+                          <ScrollAnimatedItem key={movie.id}>
+                            <MovieCard movie={movie} onClick={handleMovieSelect} className="w-full" />
+                          </ScrollAnimatedItem>
                         ))}
                       </div>
-                    ) : (
-                      <div className="h-96 flex flex-col items-center justify-center text-center">
-                        <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
-                          <TrendingUp className="text-white/20" size={32} />
-                        </div>
-                        <h3 className="text-xl font-display font-bold mb-2">History is empty</h3>
-                        <p className="text-white/40 max-w-xs">Titles you view will appear here for quick access.</p>
+
+                      <div className="flex justify-center pt-8 pb-32">
+                        <button
+                          onClick={loadMoreGenreMovies}
+                          className="px-12 py-4 bg-brand-primary/10 border border-brand-primary/20 text-brand-primary font-black rounded uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all shadow-lg shadow-brand-primary/10"
+                        >
+                          More {selectedGenre.name} Results
+                        </button>
                       </div>
-                    )}
-                  </>
-                )}
-                {activeTab === "account" && !selectedFriend && (
-                  <AccountView 
-                    user={user}
-                    history={history}
-                    watchlist={watchlist}
-                    friends={friends}
-                    onCsvUpload={() => fileInputRef.current?.click()}
-                    onClearHistory={() => setHistory([])}
-                    onMovieClick={handleMovieSelect}
-                    onUpdateName={(name) => setUser(prev => ({ ...prev, name }))}
-                    onAddFriend={(name) => {
-                      const mockLastWatched = ["Inception", "The Matrix", "Breaking Bad", "Stranger Things", "Interstellar"];
-                      const lastWatched = mockLastWatched[Math.floor(Math.random() * mockLastWatched.length)];
-                      // Add with some mock activity data
-                      const newFriend = { 
-                        name, 
-                        lastWatched,
-                        watched: trending.slice(0, 3),
-                        wishlist: popular.slice(0, 5)
-                      };
-                      setFriends(prev => [...prev, newFriend]);
-                    }}
-                    onFriendClick={(friend) => setSelectedFriend(friend)}
-                  />
-                )}
-                {activeTab === "account" && selectedFriend && (
-                  <FriendProfileView 
-                    friend={selectedFriend}
-                    onBack={() => setSelectedFriend(null)}
-                    onMovieClick={handleMovieSelect}
-                  />
-                )}
-              </motion.div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {activeTab === "movies" && (
+                <>
+                  <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em] mb-8 px-2">Movies Library</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {popular.map(movie => (
+                      <ScrollAnimatedItem key={movie.id}>
+                        <MovieCard movie={movie} onClick={handleMovieSelect} className="w-full" />
+                      </ScrollAnimatedItem>
+                    ))}
+                  </div>
+                  <div className="flex justify-center pt-8">
+                    <button
+                      onClick={loadMore}
+                      className="px-12 py-4 bg-white/5 border border-white/10 text-white font-black rounded uppercase tracking-widest hover:bg-white/10 transition-all"
+                    >
+                      Load More Movies
+                    </button>
+                  </div>
+                </>
+              )}
+              {activeTab === "tv" && (
+                <>
+                  <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em] mb-8 px-2">Series Archive</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {series.map(movie => (
+                      <ScrollAnimatedItem key={movie.id}>
+                        <MovieCard movie={movie} onClick={handleMovieSelect} className="w-full" />
+                      </ScrollAnimatedItem>
+                    ))}
+                  </div>
+                  <div className="flex justify-center pt-8">
+                    <button
+                      onClick={loadMore}
+                      className="px-12 py-4 bg-white/5 border border-white/10 text-white font-black rounded uppercase tracking-widest hover:bg-white/10 transition-all"
+                    >
+                      Load More Series
+                    </button>
+                  </div>
+                </>
+              )}
+              {activeTab === "watchlist" && (
+                <div className="space-y-12">
+                  <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-6">
+                      <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em]">My Collection</h2>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={pickRandomWatchlist}
+                          className="flex items-center gap-3 px-6 py-2.5 bg-brand-primary text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-primary/80 transition-all active:scale-95 shadow-lg shadow-brand-primary/20"
+                        >
+                          <Dice5 size={16} /> Random Pick
+                        </button>
+
+                        {watchlist.length > 0 && (
+                          <button
+                            onClick={() => setShowClearConfirm(true)}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-white/5 hover:bg-red-500 hover:text-white text-white/40 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+                          >
+                            <ArchiveX size={16} /> Clear All
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest">{watchlist.length} Titles Saved</p>
+                  </div>
+
+                  {watchlist.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-24 gap-x-8 pb-32">
+                      {watchlist.map((movie) => (
+                        <WatchlistItem
+                          key={movie.id}
+                          movie={movie}
+                          onClick={handleMovieSelect}
+                          onRemove={(e) => {
+                            e.stopPropagation();
+                            removeFromWatchlist(movie.id);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="h-96 flex flex-col items-center justify-center text-center">
+                      <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
+                        <Plus className="text-white/20" size={32} />
+                      </div>
+                      <h3 className="text-xl font-display font-bold mb-2">Your collection is empty</h3>
+                      <p className="text-white/40 max-w-xs">Start adding movies or series to build your ultimate watchlist.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {activeTab === "trending" && (
+                <>
+                  <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em] mb-8 px-2">Viewing History</h2>
+                  {history.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {history.map(movie => (
+                        <div key={movie.id}>
+                          <MovieCard movie={movie} onClick={handleMovieSelect} className="w-full" colorful={false} />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="h-96 flex flex-col items-center justify-center text-center">
+                      <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
+                        <TrendingUp className="text-white/20" size={32} />
+                      </div>
+                      <h3 className="text-xl font-display font-bold mb-2">History is empty</h3>
+                      <p className="text-white/40 max-w-xs">Titles you view will appear here for quick access.</p>
+                    </div>
+                  )}
+                </>
+              )}
+              {activeTab === "account" && !selectedFriend && (
+                <AccountView
+                  user={user}
+                  history={history}
+                  watchlist={watchlist}
+                  friends={friends}
+                  onCsvUpload={() => fileInputRef.current?.click()}
+                  onClearHistory={() => setHistory([])}
+                  onMovieClick={handleMovieSelect}
+                  onUpdateName={(name) => setUser(prev => ({ ...prev, name }))}
+                  onAddFriend={(name) => {
+                    const mockLastWatched = ["Inception", "The Matrix", "Breaking Bad", "Stranger Things", "Interstellar"];
+                    const lastWatched = mockLastWatched[Math.floor(Math.random() * mockLastWatched.length)];
+                    // Add with some mock activity data
+                    const newFriend = {
+                      name,
+                      lastWatched,
+                      watched: trending.slice(0, 3),
+                      wishlist: popular.slice(0, 5)
+                    };
+                    setFriends(prev => [...prev, newFriend]);
+                  }}
+                  onFriendClick={(friend) => setSelectedFriend(friend)}
+                />
+              )}
+              {activeTab === "account" && selectedFriend && (
+                <FriendProfileView
+                  friend={selectedFriend}
+                  onBack={() => setSelectedFriend(null)}
+                  onMovieClick={handleMovieSelect}
+                />
+              )}
+            </motion.div>
           </AnimatePresence>
         </div>
       </main>
@@ -1662,7 +1662,7 @@ export default function App() {
       {/* Overlay Modal for Details */}
       <AnimatePresence>
         {viewAllSection && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1676,7 +1676,7 @@ export default function App() {
                     {viewAllSection.title}
                   </h3>
                 </div>
-                <button 
+                <button
                   onClick={() => setViewAllSection(null)}
                   className="p-4 bg-white/5 hover:bg-white/10 rounded-full text-white transition-all group"
                 >
@@ -1692,9 +1692,9 @@ export default function App() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    <MovieCard 
-                      movie={movie} 
-                      onClick={handleMovieSelect} 
+                    <MovieCard
+                      movie={movie}
+                      onClick={handleMovieSelect}
                       className="w-full"
                       colorful={true}
                     />
@@ -1704,22 +1704,22 @@ export default function App() {
 
               {/* Scroll Sentinel */}
               <div ref={scrollSentinelRef} className="h-20 w-full flex items-center justify-center">
-                <motion.div 
+                <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
                   className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full"
                 />
               </div>
             </div>
-            
+
             {/* Scroll Indicator */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="fixed bottom-8 left-1/2 -translate-x-1/2 pointer-events-none"
             >
               <div className="w-1 h-12 bg-white/10 rounded-full overflow-hidden">
-                <motion.div 
+                <motion.div
                   animate={{ y: [0, 48, 0] }}
                   transition={{ repeat: Infinity, duration: 2 }}
                   className="w-full h-1/3 bg-brand-primary"
@@ -1732,9 +1732,9 @@ export default function App() {
 
       <AnimatePresence>
         {selectedMovie && (
-          <DetailsView 
-            movie={selectedMovie} 
-            onBack={() => setSelectedMovie(null)} 
+          <DetailsView
+            movie={selectedMovie}
+            onBack={() => setSelectedMovie(null)}
             watchlist={watchlist}
             onToggleWatchlist={toggleWatchlist}
           />
@@ -1744,14 +1744,14 @@ export default function App() {
       <AnimatePresence>
         {showClearConfirm && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowClearConfirm(false)}
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             />
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -1763,13 +1763,13 @@ export default function App() {
               <h3 className="text-xl font-bold mb-2">Clear Watchlist?</h3>
               <p className="text-white/40 mb-8 text-sm">Are you sure you want to remove all saved titles? This action cannot be undone.</p>
               <div className="flex flex-col gap-3">
-                <button 
+                <button
                   onClick={clearWatchlist}
                   className="w-full py-4 bg-red-500 text-white font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-red-600 transition-colors"
                 >
                   Yes, Clear All
                 </button>
-                <button 
+                <button
                   onClick={() => setShowClearConfirm(false)}
                   className="w-full py-4 bg-white/5 text-white font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-white/10 transition-colors"
                 >

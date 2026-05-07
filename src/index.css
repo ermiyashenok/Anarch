@@ -6,7 +6,8 @@
   --font-display: "Outfit", sans-serif;
   --color-brand-bg: #050505;
   --color-brand-sidebar: #0a0a0a;
-  --color-brand-primary: #dc2626; /* Red-600 from design */
+  --color-brand-primary: #dc2626;
+  /* Red-600 from design */
   --color-brand-text: #e5e5e5;
   --color-brand-border: rgba(255, 255, 255, 0.1);
 }
@@ -39,4 +40,3 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
