@@ -314,7 +314,7 @@ const MovieSection = ({ title, movies, onMovieClick, onSeeAll, actions }: { titl
   );
 };
 
-const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist }: { movie: Movie, onBack: () => void, watchlist: Movie[], onToggleWatchlist: (m: Movie) => void }) => {
+const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay }: { movie: Movie, onBack: () => void, watchlist: Movie[], onToggleWatchlist: (m: Movie) => void, onPlay: (m: Movie) => void }) => {
   const [details, setDetails] = useState<MovieDetails | null>(null);
   const [cast, setCast] = useState<Cast[]>([]);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
@@ -413,14 +413,7 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist }: { movie: M
 
             <div className="flex items-center gap-4">
               <button
-                onClick={() => {
-                  if (details?.imdb_id) {
-                    window.open(`https://www.playimdb.com/title/${details.imdb_id}/`, '_blank');
-                  } else {
-                    const query = movie.title || movie.name;
-                    window.open(`https://www.playimdb.com/find?q=${encodeURIComponent(query!)}`, '_blank');
-                  }
-                }}
+                onClick={() => onPlay(movie)}
                 className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-bold text-lg hover:bg-zinc-200 transition-all active:scale-95 shadow-xl"
               >
                 <Play size={24} className="fill-black" /> Play Now
@@ -508,6 +501,8 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist }: { movie: M
           </div>
         </div>
       </motion.div>
+
+
 
       <AnimatePresence>
         {showTrailer && trailerKey && (
@@ -904,6 +899,18 @@ export default function App() {
   });
 
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
+  const [showGlobalPlayer, setShowGlobalPlayer] = useState(false);
+  const [globalPlayerMovie, setGlobalPlayerMovie] = useState<Movie | null>(null);
+  const [playerUrl, setPlayerUrl] = useState<string>("");
+  const [showStreamingIndicator, setShowStreamingIndicator] = useState(false);
+
+  useEffect(() => {
+    if (showGlobalPlayer) {
+      setShowStreamingIndicator(true);
+      const timer = setTimeout(() => setShowStreamingIndicator(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showGlobalPlayer]);
 
   useEffect(() => {
     localStorage.setItem("anarch_user", JSON.stringify(user));
@@ -1017,16 +1024,21 @@ export default function App() {
     try {
       const type = movie.title ? "movie" : "tv";
       const details = await tmdbService.getDetails(movie.id, type);
-      if (details.imdb_id) {
-        window.open(`https://www.playimdb.com/title/${details.imdb_id}/`, '_blank');
-      } else {
-        const query = movie.title || movie.name;
-        window.open(`https://www.playimdb.com/find?q=${encodeURIComponent(query!)}`, '_blank');
-      }
+      const imdbId = details.imdb_id;
+      const url = imdbId 
+        ? `https://www.playimdb.com/title/${imdbId}/` 
+        : `https://www.playimdb.com/find?q=${encodeURIComponent(movie.title || movie.name || "")}`;
+      
+      setPlayerUrl(url);
+      setGlobalPlayerMovie(movie);
+      setShowGlobalPlayer(true);
     } catch (error) {
       console.error("Error playing now", error);
       const query = movie.title || movie.name;
-      window.open(`https://www.playimdb.com/find?q=${encodeURIComponent(query!)}`, '_blank');
+      const fallbackUrl = `https://www.playimdb.com/find?q=${encodeURIComponent(query!)}`;
+      setPlayerUrl(fallbackUrl);
+      setGlobalPlayerMovie(movie);
+      setShowGlobalPlayer(true);
     }
   };
 
@@ -1737,6 +1749,7 @@ export default function App() {
             onBack={() => setSelectedMovie(null)}
             watchlist={watchlist}
             onToggleWatchlist={toggleWatchlist}
+            onPlay={handlePlayNow}
           />
         )}
       </AnimatePresence>
@@ -1778,6 +1791,59 @@ export default function App() {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+      {/* Global Player Overlay */}
+      <AnimatePresence>
+        {showGlobalPlayer && globalPlayerMovie && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowGlobalPlayer(false)}
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-0 md:p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full h-full max-w-[100vw] max-h-[100vh] md:rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-black"
+            >
+              <button
+                onClick={() => setShowGlobalPlayer(false)}
+                className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-white/10 text-white rounded-full transition-all z-[210] backdrop-blur-md border border-white/10"
+                title="Close Player"
+              >
+                <X size={24} />
+              </button>
+              
+              <AnimatePresence>
+                {showStreamingIndicator && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="absolute top-6 left-6 z-[210] pointer-events-none hidden md:block"
+                  >
+                    <div className="flex items-center gap-3 bg-black/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
+                      <div className="w-2 h-2 bg-brand-primary rounded-full animate-pulse" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Streaming: {globalPlayerMovie.title || globalPlayerMovie.name}</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <iframe
+                src={playerUrl}
+                title="Cinema Player"
+                className="w-full h-full"
+                frameBorder="0"
+                allowFullScreen
+                allow="autoplay; encrypted-media"
+              />
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
