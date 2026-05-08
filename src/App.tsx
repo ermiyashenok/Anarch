@@ -1361,6 +1361,21 @@ export default function App() {
               {/* Dynamic Content based on tab */}
               {activeTab === "home" && (
                 <>
+                  {history.length > 0 && (
+                    <ScrollAnimatedItem>
+                      <MovieSection
+                        title="Continue Watching"
+                        movies={history.slice(0, 8)}
+                        onMovieClick={handleMovieSelect}
+                        actions={
+                          <div className="flex items-center gap-2 px-3 py-1 bg-brand-primary/10 rounded-full border border-brand-primary/20">
+                            <div className="w-1.5 h-1.5 bg-brand-primary rounded-full animate-pulse" />
+                            <span className="text-[8px] font-black uppercase tracking-widest text-brand-primary">Resume Session</span>
+                          </div>
+                        }
+                      />
+                    </ScrollAnimatedItem>
+                  )}
                   <ScrollAnimatedItem>
                     <MovieSection
                       title="Trending Global"
