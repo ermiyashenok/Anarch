@@ -186,19 +186,19 @@ const SearchOverlay = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] bg-transparent overflow-y-auto no-scrollbar pt-20 px-4 md:px-20"
+          className="fixed inset-0 z-[100] bg-brand-bg/60 backdrop-blur-xl overflow-y-auto no-scrollbar pt-20 px-4 md:px-20"
         >
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center justify-center mb-16 px-4">
               <div className="relative flex-1 max-w-xl group">
-                <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-brand-primary transition-colors" size={20} />
+                <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-brand-primary transition-colors" size={20} />
                 <input
                   autoFocus
                   type="text"
                   placeholder="Search titles..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full bg-zinc-900/90 backdrop-blur-md border border-white/10 rounded-2xl py-4 pl-14 pr-12 text-lg font-medium outline-none focus:border-brand-primary/40 transition-all placeholder:text-white/20"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-12 text-lg font-medium outline-none focus:border-brand-primary/40 focus:bg-white/10 transition-all placeholder:text-white/10"
                 />
                 {query && (
                   <button
@@ -211,9 +211,9 @@ const SearchOverlay = ({
               </div>
               <button
                 onClick={onClose}
-                className="ml-6 p-4 text-white/60 hover:text-white transition-all flex items-center gap-2 group"
+                className="ml-6 p-4 text-white/30 hover:text-white transition-all flex items-center gap-2 group"
               >
-                <div className="w-8 h-8 rounded-full border border-white/20 bg-zinc-900/50 backdrop-blur-md flex items-center justify-center group-hover:bg-white/10 transition-all">
+                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white/10">
                   <X size={16} />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">Close</span>
@@ -250,7 +250,7 @@ const SearchOverlay = ({
               </div>
             ) : (
               <div className="h-96 flex flex-col items-center justify-center text-center">
-                <h3 className="text-4xl font-display font-black text-white/20 italic">Type to search...</h3>
+                <h3 className="text-4xl font-display font-black text-white/10 italic">Type to search...</h3>
               </div>
             )}
           </div>
