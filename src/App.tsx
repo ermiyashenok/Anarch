@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import Papa from "papaparse";
 import {
@@ -911,6 +911,93 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [showGlobalPlayer]);
+
+  // --- Browser History Management ---
+  const isPopState = useRef(false);
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state) {
+        isPopState.current = true;
+        const {
+          activeTab: stateTab,
+          selectedMovie: stateMovie,
+          selectedGenre: stateGenre,
+          viewAllSection: stateViewAll,
+          selectedFriend: stateFriend,
+          showSearchOverlay: stateSearch,
+          showGlobalPlayer: statePlayer,
+          globalPlayerMovie: statePlayerMovie,
+          playerUrl: statePlayerUrl
+        } = event.state;
+
+        if (stateTab !== undefined) setActiveTab(stateTab);
+        setSelectedMovie(stateMovie || null);
+        setSelectedGenre(stateGenre || null);
+        setViewAllSection(stateViewAll || null);
+        setSelectedFriend(stateFriend || null);
+        setShowSearchOverlay(stateSearch || false);
+        setShowGlobalPlayer(statePlayer || false);
+        setGlobalPlayerMovie(statePlayerMovie || null);
+        setPlayerUrl(statePlayerUrl || "");
+        
+        setTimeout(() => {
+          isPopState.current = false;
+        }, 100);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    
+    // Initial state replacement
+    if (!window.history.state) {
+      window.history.replaceState({
+        activeTab,
+        selectedMovie,
+        selectedGenre,
+        viewAllSection,
+        selectedFriend,
+        showSearchOverlay,
+        showGlobalPlayer,
+        globalPlayerMovie,
+        playerUrl
+      }, "");
+    }
+
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    if (isPopState.current) return;
+
+    const state = {
+      activeTab,
+      selectedMovie,
+      selectedGenre,
+      viewAllSection,
+      selectedFriend,
+      showSearchOverlay,
+      showGlobalPlayer,
+      globalPlayerMovie,
+      playerUrl
+    };
+
+    // To avoid redundant entries, we compare with current history state if possible
+    const currentHistoryState = window.history.state;
+    const hasChanged = !currentHistoryState || 
+      currentHistoryState.activeTab !== activeTab ||
+      currentHistoryState.selectedMovie?.id !== selectedMovie?.id ||
+      currentHistoryState.selectedGenre?.id !== selectedGenre?.id ||
+      currentHistoryState.viewAllSection?.title !== viewAllSection?.title ||
+      currentHistoryState.selectedFriend?.name !== selectedFriend?.name ||
+      currentHistoryState.showSearchOverlay !== showSearchOverlay ||
+      currentHistoryState.showGlobalPlayer !== showGlobalPlayer ||
+      currentHistoryState.globalPlayerMovie?.id !== globalPlayerMovie?.id;
+
+    if (hasChanged) {
+      window.history.pushState(state, "");
+    }
+  }, [activeTab, selectedMovie, selectedGenre, viewAllSection, selectedFriend, showSearchOverlay, showGlobalPlayer, globalPlayerMovie, playerUrl]);
 
   useEffect(() => {
     localStorage.setItem("anarch_user", JSON.stringify(user));
