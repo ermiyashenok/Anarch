@@ -279,10 +279,10 @@ const MovieCard = ({
   const isPoster = variant === "poster";
   return (
     <motion.div
-      whileHover={{ 
-        scale: 1.04, 
+      whileHover={{
+        scale: 1.04,
         y: -5,
-        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 30px 0 rgba(var(--brand-primary-rgb, 229, 9, 20), 0.2)" 
+        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 30px 0 rgba(var(--brand-primary-rgb, 229, 9, 20), 0.2)"
       }}
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -310,7 +310,7 @@ const MovieCard = ({
         loading="lazy"
         referrerPolicy="no-referrer"
       />
-      
+
       {/* Hover Overlay with Play Icon */}
       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 z-20">
         <div className="w-14 h-14 bg-brand-primary rounded-full flex items-center justify-center shadow-2xl scale-50 group-hover:scale-100 transition-transform duration-500">
@@ -324,10 +324,10 @@ const MovieCard = ({
             {movie.title || movie.name}
           </p>
           <div className="flex items-center gap-2">
-            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
+            <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">
               {new Date(movie.release_date || movie.first_air_date || "").getFullYear()}
             </p>
-            <span className="w-1 h-1 bg-zinc-600 rounded-full" />
+            <span className="w-1 h-1 bg-white/10 rounded-full" />
             <p className="text-[10px] text-brand-primary font-black uppercase tracking-widest">
               ★ {movie.vote_average?.toFixed(1) || "N/A"}
             </p>
@@ -356,16 +356,18 @@ const MovieSection = ({
   showIndex?: boolean
 }) => {
   return (
-    <section className="mb-12">
-      <div className="flex items-center justify-between mb-4 px-2">
-        <div className="flex items-center gap-4">
-          <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em]">{title}</h2>
+    <section className="mb-24">
+      <div className="flex items-center justify-between mb-8 px-2">
+        <div className="flex items-center gap-6">
+          <h2 className="text-xl md:text-2xl font-display font-black text-white uppercase tracking-tighter italic">
+            {title}
+          </h2>
           {actions}
         </div>
         {onSeeAll && (
           <span
             onClick={onSeeAll}
-            className="text-[10px] text-brand-primary font-black uppercase tracking-widest cursor-pointer hover:text-white transition-colors"
+            className="text-[10px] text-brand-primary font-black uppercase tracking-[0.2em] cursor-pointer hover:text-white transition-colors"
           >
             See all
           </span>
@@ -816,7 +818,7 @@ const AccountView = ({
         {/* Left Column: Actions & Friends */}
         <div className="md:col-span-4 space-y-16">
           <div className="space-y-8">
-            <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] px-1">Control Center</h3>
+            <h3 className="text-xl font-display font-black text-white italic uppercase tracking-tighter px-1">Control Center</h3>
             <div className="flex flex-col gap-4">
               <button
                 onClick={onCsvUpload}
@@ -1019,7 +1021,7 @@ export default function App() {
         setShowGlobalPlayer(statePlayer || false);
         setGlobalPlayerMovie(statePlayerMovie || null);
         setPlayerUrl(statePlayerUrl || "");
-        
+
         setTimeout(() => {
           isPopState.current = false;
         }, 100);
@@ -1027,7 +1029,7 @@ export default function App() {
     };
 
     window.addEventListener("popstate", handlePopState);
-    
+
     // Initial state replacement
     if (!window.history.state) {
       window.history.replaceState({
@@ -1063,7 +1065,7 @@ export default function App() {
 
     // To avoid redundant entries, we compare with current history state if possible
     const currentHistoryState = window.history.state;
-    const hasChanged = !currentHistoryState || 
+    const hasChanged = !currentHistoryState ||
       currentHistoryState.activeTab !== activeTab ||
       currentHistoryState.selectedMovie?.id !== selectedMovie?.id ||
       currentHistoryState.selectedGenre?.id !== selectedGenre?.id ||
@@ -1191,10 +1193,10 @@ export default function App() {
       const type = movie.title ? "movie" : "tv";
       const details = await tmdbService.getDetails(movie.id, type);
       const imdbId = details.imdb_id;
-      const url = imdbId 
-        ? `https://www.playimdb.com/title/${imdbId}/` 
+      const url = imdbId
+        ? `https://www.playimdb.com/title/${imdbId}/`
         : `https://www.playimdb.com/find?q=${encodeURIComponent(movie.title || movie.name || "")}`;
-      
+
       setPlayerUrl(url);
       setGlobalPlayerMovie(movie);
       setShowGlobalPlayer(true);
@@ -1502,23 +1504,23 @@ export default function App() {
                   <div className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-brand-bg to-transparent" />
 
-                  <div className="absolute bottom-20 left-10 md:left-20 max-w-2xl z-20">
+                  <div className="absolute bottom-14 left-10 md:left-20 z-20 pr-10">
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center gap-3 mb-6"
+                      className="flex items-center gap-4 mb-6"
                     >
-                      <span className="px-3 py-1 bg-brand-primary text-[10px] font-black rounded uppercase tracking-widest shadow-lg shadow-brand-primary/20">Featured Content</span>
-                      <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+                      <span className="px-3 py-1 bg-brand-primary text-[10px] font-black rounded uppercase tracking-[0.2em] shadow-lg shadow-brand-primary/20">Featured Content</span>
+                      <span className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em]">
                         {new Date(featured.release_date || featured.first_air_date || "").getFullYear()} • {featured.vote_average?.toFixed(1)} Rating • {featured.title ? "Movie" : "Series"}
                       </span>
                     </motion.div>
-                    
-                    <h2 className="text-6xl md:text-8xl font-black text-white mb-6 leading-[0.9] uppercase tracking-tighter drop-shadow-2xl italic">
+
+                    <h2 className="text-5xl md:text-8xl font-display font-black text-white mb-6 leading-tight uppercase tracking-tighter drop-shadow-2xl italic">
                       {featured.title || featured.name}
                     </h2>
-                    
-                    <p className="text-white/60 text-lg md:text-xl mb-10 line-clamp-3 max-w-xl drop-shadow-lg font-medium leading-relaxed">
+
+                    <p className="text-white/50 text-lg md:text-xl mb-10 line-clamp-3 max-w-2xl drop-shadow-lg font-medium leading-relaxed">
                       {featured.overview}
                     </p>
                     <div className="flex gap-4">
@@ -1635,7 +1637,7 @@ export default function App() {
                 <div className="space-y-12">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
                     <div className="flex flex-col gap-2">
-                      <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em]">Discovery Categories</h2>
+                      <h2 className="text-xl md:text-2xl font-display font-black text-white uppercase tracking-tighter italic">Discovery Categories</h2>
                       <div className="flex bg-white/5 p-1 rounded-xl w-fit">
                         <button
                           onClick={() => {
@@ -1716,7 +1718,7 @@ export default function App() {
                           )}
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                        <span className="absolute bottom-4 left-4 right-4 font-black uppercase text-[10px] tracking-widest text-left line-clamp-2">{genre.name}</span>
+                        <span className="absolute bottom-6 left-6 right-6 font-display font-black uppercase text-xl md:text-2xl tracking-tighter text-left line-clamp-1 italic text-white drop-shadow-lg">{genre.name}</span>
                       </motion.button>
                     ))}
                   </div>
@@ -1793,7 +1795,7 @@ export default function App() {
                 <div className="space-y-12">
                   <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-6">
-                      <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em]">My Collection</h2>
+                      <h2 className="text-xl md:text-2xl font-display font-black text-white italic uppercase tracking-tighter">My Collection</h2>
                       <div className="flex items-center gap-3">
                         <button
                           onClick={pickRandomWatchlist}
@@ -1842,7 +1844,7 @@ export default function App() {
               )}
               {activeTab === "trending" && (
                 <>
-                  <h2 className="text-sm font-black text-white/40 uppercase tracking-[0.3em] mb-8 px-2">Viewing History</h2>
+                  <h2 className="text-xl md:text-2xl font-display font-black text-white italic uppercase tracking-tighter mb-8 px-2">Viewing History</h2>
                   {history.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {history.map(movie => (
@@ -2045,7 +2047,7 @@ export default function App() {
               >
                 <X size={24} />
               </button>
-              
+
               <AnimatePresence>
                 {showStreamingIndicator && (
                   <motion.div
