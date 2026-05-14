@@ -22,18 +22,34 @@ import {
   Settings,
   Edit2,
   Users,
-  UserPlus
+  UserPlus,
+  Clock,
+  History,
+  Sparkles,
+  UserCheck
 } from "lucide-react";
 import { tmdbService, getImageUrl } from "./services/tmdb";
 import { Movie, MovieDetails, Cast } from "./types";
 import { cn } from "./lib/utils";
 
+// --- Hooks ---
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+}
+
 // --- Utils ---
 
-const uniqueMovies = (movies: Movie[]) => {
+const uniqueMovies = (movies: Movie[] = []) => {
+  if (!Array.isArray(movies)) return [];
   const seen = new Set();
   return movies.filter(movie => {
-    if (!movie || seen.has(movie.id)) return false;
+    if (!movie || !movie.id || seen.has(movie.id)) return false;
     seen.add(movie.id);
     return true;
   });
@@ -170,14 +186,18 @@ const SearchOverlay = ({
   onMovieClick,
   query,
   setQuery,
-  results
+  results,
+  recentSearches,
+  onClearRecent
 }: {
   isOpen: boolean,
   onClose: () => void,
   onMovieClick: (m: Movie) => void,
   query: string,
   setQuery: (q: string) => void,
-  results: Movie[]
+  results: Movie[],
+  recentSearches: string[],
+  onClearRecent: () => void
 }) => {
   return (
     <AnimatePresence>
@@ -186,41 +206,99 @@ const SearchOverlay = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] bg-brand-bg/60 backdrop-blur-xl overflow-y-auto no-scrollbar pt-20 px-4 md:px-20"
+          className="fixed inset-0 z-100 bg-brand-bg/80 backdrop-blur-2xl overflow-y-auto no-scrollbar pt-20 px-4 md:px-20"
         >
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center justify-center mb-16 px-4">
-              <div className="relative flex-1 max-w-xl group">
-                <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-brand-primary transition-colors" size={20} />
+              <div className="relative flex-1 max-w-2xl group">
+                <SearchIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-brand-primary transition-colors" size={24} />
                 <input
                   autoFocus
                   type="text"
-                  placeholder="Search titles..."
+                  placeholder="Search movies, series, or actors..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-12 text-lg font-medium outline-none focus:border-brand-primary/40 focus:bg-white/10 transition-all placeholder:text-white/10"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-6 pl-16 pr-14 text-xl font-display font-medium outline-none focus:border-brand-primary/40 focus:bg-white/10 transition-all placeholder:text-white/10"
                 />
                 {query && (
                   <button
                     onClick={() => setQuery("")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white"
+                    className="absolute right-6 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
                   >
-                    <X size={18} />
+                    <X size={20} />
                   </button>
                 )}
               </div>
               <button
                 onClick={onClose}
-                className="ml-6 p-4 text-white/30 hover:text-white transition-all flex items-center gap-2 group"
+                className="ml-8 p-4 text-white/30 hover:text-white transition-all flex items-center gap-2 group"
               >
-                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white/10">
-                  <X size={16} />
+                <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white/10">
+                  <X size={20} />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">Close</span>
               </button>
             </div>
 
-            {results.length > 0 ? (
+            {!query && recentSearches.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-12"
+              >
+                <div className="flex items-center justify-between mb-6 px-2">
+                  <div className="flex items-center gap-3">
+                    <History size={16} className="text-brand-primary" />
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Recent Searches</h3>
+                  </div>
+                  <button onClick={onClearRecent} className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-red-500 transition-colors">Clear</button>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {recentSearches.map((s, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setQuery(s)}
+                      className="px-5 py-2.5 bg-white/5 border border-white/5 rounded-xl text-xs font-bold text-white/60 hover:text-white hover:bg-white/10 hover:border-white/10 transition-all flex items-center gap-2"
+                    >
+                      <Clock size={14} /> {s}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {!query && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div>
+                  <div className="flex items-center gap-3 mb-6 px-2">
+                    <Sparkles size={16} className="text-yellow-500" />
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Popular Categories</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {["Action", "Sci-Fi", "Comedy", "Horror", "Drama", "Animation"].map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setQuery(cat)}
+                        className="p-4 bg-white/5 border border-white/5 rounded-2xl text-left hover:bg-brand-primary/10 hover:border-brand-primary/20 transition-all group"
+                      >
+                        <p className="text-xs font-black uppercase tracking-widest text-white/60 group-hover:text-brand-primary">{cat}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-3 mb-6 px-2">
+                    <UserCheck size={16} className="text-brand-primary" />
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Recommended for You</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-xs text-white/20 px-2 italic font-medium">Explore trending titles and curated collections...</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {query && results.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pb-32">
                 {results.map((movie) => (
                   <motion.div
@@ -240,17 +318,13 @@ const SearchOverlay = ({
                   </motion.div>
                 ))}
               </div>
-            ) : query.length > 2 ? (
+            ) : query.length > 2 && (
               <div className="h-96 flex flex-col items-center justify-center text-center">
                 <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
                   <SearchIcon className="text-white/10" size={32} />
                 </div>
                 <h3 className="text-xl font-display font-bold mb-2 text-white/60">No results found for "{query}"</h3>
                 <p className="text-white/30 max-w-xs">Double check your spelling or try searching for something else.</p>
-              </div>
-            ) : (
-              <div className="h-96 flex flex-col items-center justify-center text-center">
-                <h3 className="text-4xl font-display font-black text-white/10 italic">Type to search...</h3>
               </div>
             )}
           </div>
@@ -259,6 +333,43 @@ const SearchOverlay = ({
     </AnimatePresence>
   );
 };
+
+const Skeleton = ({ className }: { className?: string }) => (
+  <div className={cn("animate-pulse bg-white/5 rounded-xl", className)} />
+);
+
+const MovieCardSkeleton = ({ variant = "landscape", ...props }: { variant?: "landscape" | "poster", [key: string]: any }) => (
+  <div className={cn(
+    "relative rounded-xl overflow-hidden bg-zinc-900 border border-white/5 flex-none",
+    variant === "poster" ? "aspect-2/3 w-40 md:w-56" : "aspect-video w-64 md:w-80"
+  )}>
+    <div className="absolute inset-0 bg-linear-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-5">
+      <Skeleton className="h-4 w-3/4 mb-2" />
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-3 w-8" />
+        <span className="w-1 h-1 bg-white/10 rounded-full" />
+        <Skeleton className="h-3 w-12" />
+      </div>
+    </div>
+  </div>
+);
+
+const HeroSkeleton = () => (
+  <div className="relative h-[60vh] min-h-[500px] w-screen left-1/2 right-1/2 ml-[-50vw] mr-[-50vw] overflow-hidden -mt-10 mb-16 bg-zinc-900">
+    <div className="absolute inset-0 bg-linear-to-r from-black via-black/20 to-transparent" />
+    <div className="absolute inset-x-0 bottom-0 h-64 bg-linear-to-t from-brand-bg to-transparent" />
+    <div className="absolute bottom-16 left-10 md:left-20 z-20 pr-10 w-full max-w-2xl">
+      <Skeleton className="h-4 w-32 mb-6" />
+      <Skeleton className="h-16 w-3/4 mb-6" />
+      <Skeleton className="h-4 w-full mb-2" />
+      <Skeleton className="h-4 w-5/6 mb-10" />
+      <div className="flex gap-4">
+        <Skeleton className="h-12 w-32 rounded-lg" />
+        <Skeleton className="h-12 w-32 rounded-lg" />
+      </div>
+    </div>
+  </div>
+);
 
 const MovieCard = ({
   movie,
@@ -289,7 +400,7 @@ const MovieCard = ({
       onClick={() => onClick(movie)}
       className={cn(
         "relative rounded-xl overflow-hidden cursor-pointer group bg-zinc-900 border border-white/5 transition-colors hover:border-brand-primary/50",
-        isPoster ? "aspect-[2/3]" : "aspect-video",
+        isPoster ? "aspect-2/3" : "aspect-video",
         className
       )}
     >
@@ -318,7 +429,7 @@ const MovieCard = ({
         </div>
       </div>
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent flex flex-col justify-end p-5 z-10 transition-opacity duration-300">
+      <div className="absolute inset-0 bg-linear-to-t from-black via-black/20 to-transparent flex flex-col justify-end p-5 z-10 transition-opacity duration-300">
         <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
           <p className="text-sm font-black text-white uppercase tracking-tighter line-clamp-1 group-hover:text-brand-primary transition-colors mb-1">
             {movie.title || movie.name}
@@ -345,7 +456,8 @@ const MovieSection = ({
   onSeeAll,
   actions,
   variant = "landscape",
-  showIndex = false
+  showIndex = false,
+  isLoading = false
 }: {
   title: string,
   movies: Movie[],
@@ -353,7 +465,8 @@ const MovieSection = ({
   onSeeAll?: () => void,
   actions?: React.ReactNode,
   variant?: "landscape" | "poster",
-  showIndex?: boolean
+  showIndex?: boolean,
+  isLoading?: boolean
 }) => {
   return (
     <section className="mb-24">
@@ -374,28 +487,35 @@ const MovieSection = ({
         )}
       </div>
       <div className="flex gap-4 overflow-x-auto no-scrollbar pb-8 px-2 scroll-smooth">
-        {movies.map((movie, idx) => (
-          <MovieCard
-            key={movie.id}
-            movie={movie}
-            onClick={onMovieClick}
-            variant={variant}
-            index={showIndex ? idx : undefined}
-            className={cn(
-              "flex-none",
-              variant === "poster" ? "w-40 md:w-56" : "w-64 md:w-80"
-            )}
-          />
-        ))}
+        {isLoading ? (
+          Array.from({ length: 6 }).map((_, idx) => (
+            <MovieCardSkeleton key={idx} variant={variant} />
+          ))
+        ) : (
+          movies.map((movie, idx) => (
+            <MovieCard
+              key={movie.id}
+              movie={movie}
+              onClick={onMovieClick}
+              variant={variant}
+              index={showIndex ? idx : undefined}
+              className={cn(
+                "flex-none",
+                variant === "poster" ? "w-40 md:w-56" : "w-64 md:w-80"
+              )}
+            />
+          ))
+        )}
       </div>
     </section>
   );
 };
 
-const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay }: { movie: Movie, onBack: () => void, watchlist: Movie[], onToggleWatchlist: (m: Movie) => void, onPlay: (m: Movie) => void }) => {
+const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay, onMovieSelect }: { movie: Movie, onBack: () => void, watchlist: Movie[], onToggleWatchlist: (m: Movie) => void, onPlay: (m: Movie) => void, onMovieSelect: (m: Movie) => void }) => {
   const [details, setDetails] = useState<MovieDetails | null>(null);
   const [cast, setCast] = useState<Cast[]>([]);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
+  const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTrailer, setShowTrailer] = useState(false);
 
@@ -406,13 +526,15 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay }: { 
       setLoading(true);
       try {
         const type = movie.title ? "movie" : "tv";
-        const [data, castData, videosData] = await Promise.all([
+        const [data, castData, videosData, recData] = await Promise.all([
           tmdbService.getDetails(movie.id, type),
           tmdbService.getCredits(movie.id, type),
-          tmdbService.getVideos(movie.id, type)
+          tmdbService.getVideos(movie.id, type),
+          tmdbService.getRecommendations(movie.id, type)
         ]);
         setDetails(data);
         setCast(castData);
+        setRecommendations(recData || []);
         const trailer = videosData.find((v: any) => v.type === "Trailer" && v.site === "YouTube");
         if (trailer) setTrailerKey(trailer.key);
       } catch (error) {
@@ -438,7 +560,7 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay }: { 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 1.1 }}
-        className="fixed inset-0 z-[60] bg-brand-bg overflow-y-auto no-scrollbar"
+        className="fixed inset-0 z-60 bg-brand-bg overflow-y-auto no-scrollbar"
       >
         <div className="relative h-[60vh] md:h-[80vh] w-full">
           <img
@@ -447,7 +569,9 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay }: { 
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-bg via-brand-bg/40 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-brand-bg via-brand-bg/60 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-r from-brand-bg/80 via-transparent to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-64 bg-linear-to-t from-brand-bg to-transparent" />
 
           <button
             onClick={onBack}
@@ -577,6 +701,23 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay }: { 
               </div>
             </div>
           </div>
+
+          {recommendations && recommendations.length > 0 && (
+            <div className="mt-20">
+              <h3 className="text-2xl font-display font-bold mb-8 px-2">More Like This</h3>
+              <div className="flex gap-4 overflow-x-auto no-scrollbar pb-8 px-2 scroll-smooth">
+                {recommendations.map((rec) => (
+                  <MovieCard
+                    key={rec.id}
+                    movie={rec}
+                    onClick={onMovieSelect}
+                    variant="poster"
+                    className="flex-none w-40 md:w-56"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -589,7 +730,7 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay }: { 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowTrailer(false)}
-            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-10"
+            className="fixed inset-0 z-100 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-10"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -661,7 +802,7 @@ const FriendProfileView = ({
               <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Watched</p>
               <p className="text-4xl font-display font-black text-white">{mockWatched.length}</p>
             </div>
-            <div className="w-[1px] h-12 bg-white/5" />
+            <div className="w-px h-12 bg-white/5 mx-6" />
             <div className="text-center">
               <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Saved</p>
               <p className="text-4xl font-display font-black text-white">{mockWishlist.length}</p>
@@ -759,7 +900,7 @@ const AccountView = ({
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-tr from-brand-primary to-brand-primary/40 text-brand-bg text-4xl font-black mb-4 shadow-[0_0_50px_-12px_rgba(var(--brand-primary-rgb),0.5)]">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-linear-to-tr from-brand-primary to-brand-primary/40 text-brand-bg text-4xl font-black mb-4 shadow-[0_0_50px_-12px_rgba(var(--brand-primary-rgb),0.5)]">
             {user.name.charAt(0)}
           </div>
 
@@ -800,12 +941,12 @@ const AccountView = ({
               <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] group-hover:text-brand-primary transition-colors">Watched</p>
               <p className="text-4xl font-display font-black text-white">{history.length}</p>
             </div>
-            <div className="w-[1px] h-12 bg-white/5" />
+            <div className="w-px h-12 bg-white/5" />
             <div className="text-center group cursor-default">
               <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] group-hover:text-brand-primary transition-colors">Saved</p>
               <p className="text-4xl font-display font-black text-white">{watchlist.length}</p>
             </div>
-            <div className="w-[1px] h-12 bg-white/5" />
+            <div className="w-px h-12 bg-white/5" />
             <div className="text-center group cursor-default">
               <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] group-hover:text-brand-primary transition-colors">Friends</p>
               <p className="text-4xl font-display font-black text-white">{friends.length}</p>
@@ -822,7 +963,7 @@ const AccountView = ({
             <div className="flex flex-col gap-4">
               <button
                 onClick={onCsvUpload}
-                className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/[0.03] rounded-3xl transition-all border border-transparent hover:border-white/5"
+                className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/3 rounded-3xl transition-all border border-transparent hover:border-white/5"
               >
                 <div>
                   <p className="text-xs font-black uppercase tracking-widest text-white mb-1 group-hover:text-brand-primary transition-colors">Sync Database</p>
@@ -833,7 +974,7 @@ const AccountView = ({
 
               <button
                 onClick={() => setShowAddFriend(true)}
-                className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/[0.03] rounded-3xl transition-all border border-transparent hover:border-white/5"
+                className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/3 rounded-3xl transition-all border border-transparent hover:border-white/5"
               >
                 <div>
                   <p className="text-xs font-black uppercase tracking-widest text-white mb-1 group-hover:text-brand-primary transition-colors">Find Rebels</p>
@@ -844,7 +985,7 @@ const AccountView = ({
 
               <button
                 onClick={onClearHistory}
-                className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/[0.03] rounded-3xl transition-all border border-transparent hover:border-white/5"
+                className="group flex items-center justify-between w-full p-6 text-left hover:bg-white/3 rounded-3xl transition-all border border-transparent hover:border-white/5"
               >
                 <div>
                   <p className="text-xs font-black uppercase tracking-widest text-white mb-1 group-hover:text-red-500 transition-colors">Flush History</p>
@@ -904,7 +1045,7 @@ const AccountView = ({
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => onMovieClick(movie)}
-                    className="group flex items-center gap-6 p-4 hover:bg-white/[0.03] rounded-2xl cursor-pointer transition-all border border-transparent hover:border-white/5"
+                    className="group flex items-center gap-6 p-4 hover:bg-white/3 rounded-2xl cursor-pointer transition-all border border-transparent hover:border-white/5"
                   >
                     <div className="relative w-24 aspect-video rounded-lg overflow-hidden flex-none">
                       <img
@@ -945,6 +1086,13 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [genreSearchQuery, setGenreSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
+  const debouncedSearchQuery = useDebounce(searchQuery, 400);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("anarch_recent_searches");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [trending, setTrending] = useState<Movie[]>([]);
@@ -966,6 +1114,18 @@ export default function App() {
   const [genrePage, setGenrePage] = useState(1);
   const [viewAllSection, setViewAllSection] = useState<{ title: string, movies: Movie[], type?: string } | null>(null);
   const [viewAllPage, setViewAllPage] = useState(1);
+  useEffect(() => {
+    localStorage.setItem("anarch_recent_searches", JSON.stringify(recentSearches));
+  }, [recentSearches]);
+
+  const addRecentSearch = (term: string) => {
+    if (!term || term.length < 2) return;
+    setRecentSearches(prev => {
+      const filtered = prev.filter(s => s.toLowerCase() !== term.toLowerCase());
+      return [term, ...filtered].slice(0, 10);
+    });
+  };
+
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem("anarch_user");
@@ -1367,16 +1527,23 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (searchQuery.length > 2) {
-      const delayDebounce = setTimeout(async () => {
-        const results = await tmdbService.search(searchQuery);
-        setSearchResults(uniqueMovies(results.filter(r => r.poster_path || r.backdrop_path)));
-      }, 500);
-      return () => clearTimeout(delayDebounce);
+    if (debouncedSearchQuery.length > 2) {
+      const performSearch = async () => {
+        try {
+          const results = await tmdbService.search(debouncedSearchQuery);
+          setSearchResults(uniqueMovies(results.filter(r => r.poster_path || r.backdrop_path)));
+          if (results.length > 0) {
+            addRecentSearch(debouncedSearchQuery);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      performSearch();
     } else {
       setSearchResults([]);
     }
-  }, [searchQuery]);
+  }, [debouncedSearchQuery]);
 
   // Auto-cycling featured movie
   useEffect(() => {
@@ -1410,15 +1577,21 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <div className="h-screen bg-brand-bg flex items-center justify-center">
-        <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="flex flex-col items-center gap-4"
-        >
-          <div className="w-16 h-16 bg-brand-primary rounded flex items-center justify-center font-black text-2xl text-white">A</div>
-          <h2 className="text-2xl font-display font-black tracking-[0.5em] text-white italic">ANARCH</h2>
-        </motion.div>
+      <div className="min-h-screen bg-brand-bg text-white selection:bg-brand-primary selection:text-white overflow-x-hidden">
+        <Navbar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onCsvUpload={() => {}}
+          onSearchClick={() => {}}
+        />
+        <main className="min-h-screen pt-16 transition-all duration-300 flex flex-col relative overflow-x-hidden">
+          <div className="flex-1 px-10 py-10 space-y-16 overflow-x-hidden">
+            <HeroSkeleton />
+            <MovieSection title="Trending Global" movies={[]} onMovieClick={() => {}} isLoading={true} />
+            <MovieSection title="Popular Movies" movies={[]} onMovieClick={() => {}} variant="poster" isLoading={true} />
+            <MovieSection title="Action & Adventure" movies={[]} onMovieClick={() => {}} isLoading={true} />
+          </div>
+        </main>
       </div>
     );
   }
@@ -1470,6 +1643,8 @@ export default function App() {
         query={searchQuery}
         setQuery={setSearchQuery}
         results={searchResults}
+        recentSearches={recentSearches}
+        onClearRecent={() => setRecentSearches([])}
         onMovieClick={handleMovieSelect}
       />
 
@@ -1492,7 +1667,7 @@ export default function App() {
             >
               {activeTab === "home" && featured && (
                 <section
-                  className="relative h-[60vh] min-h-[500px] w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden group cursor-pointer -mt-10 mb-16"
+                  className="relative h-[60vh] min-h-[500px] w-screen left-1/2 right-1/2 ml-[-50vw] mr-[-50vw] overflow-hidden group cursor-pointer -mt-10 mb-16"
                   onClick={() => handleMovieSelect(featured)}
                 >
                   <img
@@ -1501,8 +1676,8 @@ export default function App() {
                     className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-1000"
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-brand-bg to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-r from-black via-black/20 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 h-64 bg-linear-to-t from-brand-bg to-transparent" />
 
                   <div className="absolute bottom-14 left-10 md:left-20 z-20 pr-10">
                     <motion.div
@@ -1692,11 +1867,11 @@ export default function App() {
                           }, 100);
                         }}
                         className={cn(
-                          "relative w-full aspect-[16/6] rounded-2xl overflow-hidden group border transition-all",
+                          "relative w-full aspect-16/6 rounded-2xl overflow-hidden group border transition-all",
                           selectedGenre?.id === genre.id ? "border-brand-primary shadow-lg shadow-brand-primary/20 scale-102" : "border-white/5"
                         )}
                       >
-                        <div className="absolute inset-0 flex gap-[1px]">
+                        <div className="absolute inset-0 flex gap-px">
                           {genre.backdrops && genre.backdrops.length > 0 ? (
                             genre.backdrops.map((backdrop, idx) => (
                               <div
@@ -1717,7 +1892,7 @@ export default function App() {
                             <div className="absolute inset-0 bg-zinc-800" />
                           )}
                         </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
                         <span className="absolute bottom-6 left-6 right-6 font-display font-black uppercase text-xl md:text-2xl tracking-tighter text-left line-clamp-1 italic text-white drop-shadow-lg">{genre.name}</span>
                       </motion.button>
                     ))}
@@ -1980,6 +2155,7 @@ export default function App() {
             watchlist={watchlist}
             onToggleWatchlist={toggleWatchlist}
             onPlay={handlePlayNow}
+            onMovieSelect={handleMovieSelect}
           />
         )}
       </AnimatePresence>
@@ -2031,18 +2207,18 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowGlobalPlayer(false)}
-            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-0 md:p-6"
+            className="fixed inset-0 z-200 bg-black/95 backdrop-blur-2xl flex items-center justify-center p-0 md:p-6"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full h-full max-w-[100vw] max-h-[100vh] md:rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-black"
+              className="relative w-full h-full max-w-full max-h-screen md:rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-black"
             >
               <button
                 onClick={() => setShowGlobalPlayer(false)}
-                className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-white/10 text-white rounded-full transition-all z-[210] backdrop-blur-md border border-white/10"
+                className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-white/10 text-white rounded-full transition-all z-210 backdrop-blur-md border border-white/10"
                 title="Close Player"
               >
                 <X size={24} />
@@ -2054,7 +2230,7 @@ export default function App() {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="absolute top-6 left-6 z-[210] pointer-events-none hidden md:block"
+                    className="absolute top-6 left-6 z-210 pointer-events-none hidden md:block"
                   >
                     <div className="flex items-center gap-3 bg-black/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
                       <div className="w-2 h-2 bg-brand-primary rounded-full animate-pulse" />

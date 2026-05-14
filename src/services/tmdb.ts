@@ -79,6 +79,14 @@ export const tmdbService = {
     const { data } = await tmdbApi.get(`/${type}/${id}/videos`);
     return data.results;
   },
+  getRecommendations: async (id: number, type: "movie" | "tv" = "movie"): Promise<Movie[]> => {
+    try {
+      const { data } = await tmdbApi.get(`/${type}/${id}/recommendations`);
+      return data.results || [];
+    } catch {
+      return [];
+    }
+  },
   getGenres: async (type: "movie" | "tv" = "movie"): Promise<{ id: number; name: string }[]> => {
     const { data } = await tmdbApi.get(`/genre/${type}/list`);
     return data.genres;
