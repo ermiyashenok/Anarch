@@ -260,16 +260,43 @@ const SearchOverlay = ({
   );
 };
 
-const MovieCard = ({ movie, onClick, className, colorful = true }: { movie: Movie, onClick: (movie: Movie) => void, className?: string, colorful?: boolean, key?: any }) => {
+const MovieCard = ({
+  movie,
+  onClick,
+  className,
+  colorful = true,
+  variant = "landscape",
+  index
+}: {
+  movie: Movie,
+  onClick: (movie: Movie) => void,
+  className?: string,
+  colorful?: boolean,
+  variant?: "landscape" | "poster",
+  index?: number,
+  key?: any
+}) => {
+  const isPoster = variant === "poster";
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onClick(movie)}
-      className={cn("relative aspect-video rounded-lg overflow-hidden cursor-pointer group bg-zinc-900 border border-white/5", className)}
+      className={cn(
+        "relative rounded-lg overflow-hidden cursor-pointer group bg-zinc-900 border border-white/5",
+        isPoster ? "aspect-[2/3]" : "aspect-video",
+        className
+      )}
     >
+      {index !== undefined && (
+        <div className="absolute -left-1 bottom-0 z-10 select-none pointer-events-none">
+          <span className="text-[120px] font-black leading-none text-white/10 italic tracking-tighter drop-shadow-2xl">
+            {index + 1}
+          </span>
+        </div>
+      )}
       <img
-        src={getImageUrl(movie.backdrop_path || movie.poster_path)}
+        src={getImageUrl(isPoster ? (movie.poster_path || movie.backdrop_path) : (movie.backdrop_path || movie.poster_path))}
         alt={movie.title || movie.name}
         className={cn(
           "w-full h-full object-cover transition-all duration-700 ease-in-out scale-105 group-hover:scale-100 opacity-60 group-hover:opacity-100",
@@ -288,7 +315,23 @@ const MovieCard = ({ movie, onClick, className, colorful = true }: { movie: Movi
   );
 };
 
-const MovieSection = ({ title, movies, onMovieClick, onSeeAll, actions }: { title: string, movies: Movie[], onMovieClick: (movie: Movie) => void, onSeeAll?: () => void, actions?: React.ReactNode }) => {
+const MovieSection = ({
+  title,
+  movies,
+  onMovieClick,
+  onSeeAll,
+  actions,
+  variant = "landscape",
+  showIndex = false
+}: {
+  title: string,
+  movies: Movie[],
+  onMovieClick: (movie: Movie) => void,
+  onSeeAll?: () => void,
+  actions?: React.ReactNode,
+  variant?: "landscape" | "poster",
+  showIndex?: boolean
+}) => {
   return (
     <section className="mb-12">
       <div className="flex items-center justify-between mb-4 px-2">
@@ -305,9 +348,19 @@ const MovieSection = ({ title, movies, onMovieClick, onSeeAll, actions }: { titl
           </span>
         )}
       </div>
-      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth">
-        {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} onClick={onMovieClick} className="flex-none w-64 md:w-80" />
+      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-8 px-2 scroll-smooth">
+        {movies.map((movie, idx) => (
+          <MovieCard
+            key={movie.id}
+            movie={movie}
+            onClick={onMovieClick}
+            variant={variant}
+            index={showIndex ? idx : undefined}
+            className={cn(
+              "flex-none",
+              variant === "poster" ? "w-40 md:w-56" : "w-64 md:w-80"
+            )}
+          />
         ))}
       </div>
     </section>
@@ -874,6 +927,9 @@ export default function App() {
   const [topRated, setTopRated] = useState<Movie[]>([]);
   const [upcoming, setUpcoming] = useState<Movie[]>([]);
   const [series, setSeries] = useState<Movie[]>([]);
+  const [actionMovies, setActionMovies] = useState<Movie[]>([]);
+  const [scifiMovies, setScifiMovies] = useState<Movie[]>([]);
+  const [animationMovies, setAnimationMovies] = useState<Movie[]>([]);
   const [genres, setGenres] = useState<{ id: number; name: string; backdrops: string[] }[]>([]);
   const [selectedGenre, setSelectedGenre] = useState<{ id: number; name: string } | null>(null);
   const [genreMovies, setGenreMovies] = useState<Movie[]>([]);
@@ -1195,19 +1251,25 @@ export default function App() {
       setIsLoading(true);
       try {
         setError(null);
-        const [trendData, popData, topData, upData, seriesData, genreData] = await Promise.all([
+        const [trendData, popData, topData, upData, seriesData, genreData, actionData, scifiData, animData] = await Promise.all([
           tmdbService.getTrending(),
           tmdbService.getPopular(),
           tmdbService.getTopRated(),
           tmdbService.getUpcoming(),
           tmdbService.getSeries(),
           tmdbService.getGenres(discoveryType),
+          tmdbService.getMoviesByGenre(28, "movie"),
+          tmdbService.getMoviesByGenre(878, "movie"),
+          tmdbService.getMoviesByGenre(16, "movie"),
         ]);
         setTrending(uniqueMovies(trendData));
         setPopular(uniqueMovies(popData));
         setTopRated(uniqueMovies(topData));
         setUpcoming(uniqueMovies(upData));
         setSeries(uniqueMovies(seriesData));
+        setActionMovies(uniqueMovies(actionData));
+        setScifiMovies(uniqueMovies(scifiData));
+        setAnimationMovies(uniqueMovies(animData));
 
         // Enrich genres with top movie backdrops, ensuring unique selection
         const usedBackdropPaths = new Set<string>();
@@ -1417,10 +1479,25 @@ export default function App() {
                   <div className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-brand-bg to-transparent" />
 
-                  <div className="absolute bottom-20 left-10 md:left-20 max-w-xl z-20">
-                    <span className="px-3 py-1 bg-brand-primary text-[10px] font-bold rounded uppercase tracking-widest mb-4 inline-block">Featured Production</span>
-                    <h2 className="text-7xl font-black text-white mb-4 leading-none uppercase tracking-tighter drop-shadow-2xl">{featured.title || featured.name}</h2>
-                    <p className="text-white/80 text-lg mb-8 line-clamp-2 max-w-md drop-shadow">{featured.overview}</p>
+                  <div className="absolute bottom-20 left-10 md:left-20 max-w-2xl z-20">
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center gap-3 mb-6"
+                    >
+                      <span className="px-3 py-1 bg-brand-primary text-[10px] font-black rounded uppercase tracking-widest shadow-lg shadow-brand-primary/20">Featured Content</span>
+                      <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+                        {new Date(featured.release_date || featured.first_air_date || "").getFullYear()} • {featured.vote_average?.toFixed(1)} Rating • {featured.title ? "Movie" : "Series"}
+                      </span>
+                    </motion.div>
+                    
+                    <h2 className="text-6xl md:text-8xl font-black text-white mb-6 leading-[0.9] uppercase tracking-tighter drop-shadow-2xl italic">
+                      {featured.title || featured.name}
+                    </h2>
+                    
+                    <p className="text-white/60 text-lg md:text-xl mb-10 line-clamp-3 max-w-xl drop-shadow-lg font-medium leading-relaxed">
+                      {featured.overview}
+                    </p>
                     <div className="flex gap-4">
                       <button
                         onClick={(e) => {
@@ -1448,6 +1525,72 @@ export default function App() {
               {/* Dynamic Content based on tab */}
               {activeTab === "home" && (
                 <>
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Trending Global"
+                      movies={trending.slice(0, 10)}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Trending Global", trending)}
+                      showIndex={true}
+                    />
+                  </ScrollAnimatedItem>
+
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Popular Movies"
+                      movies={popular}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Popular Movies", popular)}
+                      variant="poster"
+                    />
+                  </ScrollAnimatedItem>
+
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Action & Adventure"
+                      movies={actionMovies}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Action & Adventure", actionMovies)}
+                    />
+                  </ScrollAnimatedItem>
+
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Sci-Fi & Fantasy"
+                      movies={scifiMovies}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Sci-Fi & Fantasy", scifiMovies)}
+                    />
+                  </ScrollAnimatedItem>
+
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Series Archive"
+                      movies={series}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Series Archive", series)}
+                      variant="poster"
+                    />
+                  </ScrollAnimatedItem>
+
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Top Rated Content"
+                      movies={topRated}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Top Rated Content", topRated)}
+                    />
+                  </ScrollAnimatedItem>
+
+                  <ScrollAnimatedItem>
+                    <MovieSection
+                      title="Coming Soon"
+                      movies={upcoming}
+                      onMovieClick={handleMovieSelect}
+                      onSeeAll={() => openSeeAll("Coming Soon", upcoming)}
+                    />
+                  </ScrollAnimatedItem>
+
                   {history.length > 0 && (
                     <ScrollAnimatedItem>
                       <MovieSection
@@ -1463,46 +1606,6 @@ export default function App() {
                       />
                     </ScrollAnimatedItem>
                   )}
-                  <ScrollAnimatedItem>
-                    <MovieSection
-                      title="Trending Global"
-                      movies={trending}
-                      onMovieClick={handleMovieSelect}
-                      onSeeAll={() => openSeeAll("Trending Global", trending)}
-                    />
-                  </ScrollAnimatedItem>
-                  <ScrollAnimatedItem>
-                    <MovieSection
-                      title="Popular Movies"
-                      movies={popular}
-                      onMovieClick={handleMovieSelect}
-                      onSeeAll={() => openSeeAll("Popular Movies", popular)}
-                    />
-                  </ScrollAnimatedItem>
-                  <ScrollAnimatedItem>
-                    <MovieSection
-                      title="Series Archive"
-                      movies={series}
-                      onMovieClick={handleMovieSelect}
-                      onSeeAll={() => openSeeAll("Series Archive", series)}
-                    />
-                  </ScrollAnimatedItem>
-                  <ScrollAnimatedItem>
-                    <MovieSection
-                      title="Top Rated Content"
-                      movies={topRated}
-                      onMovieClick={handleMovieSelect}
-                      onSeeAll={() => openSeeAll("Top Rated Content", topRated)}
-                    />
-                  </ScrollAnimatedItem>
-                  <ScrollAnimatedItem>
-                    <MovieSection
-                      title="Coming Soon"
-                      movies={upcoming}
-                      onMovieClick={handleMovieSelect}
-                      onSeeAll={() => openSeeAll("Coming Soon", upcoming)}
-                    />
-                  </ScrollAnimatedItem>
                 </>
               )}
               {activeTab === "discovery" && (
