@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -7,9 +7,10 @@
   --color-brand-bg: #050505;
   --color-brand-sidebar: #0a0a0a;
   --color-brand-primary: #dc2626;
-  /* Red-600 from design */
-  --color-brand-text: #e5e5e5;
+  --color-brand-text: #ffffff;
+  --color-brand-text-muted: rgba(255, 255, 255, 0.5);
   --color-brand-border: rgba(255, 255, 255, 0.1);
+  --spacing-section: 6rem;
 }
 
 @layer base {

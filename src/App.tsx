@@ -279,11 +279,16 @@ const MovieCard = ({
   const isPoster = variant === "poster";
   return (
     <motion.div
-      whileHover={{ scale: 1.02 }}
+      whileHover={{ 
+        scale: 1.04, 
+        y: -5,
+        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 30px 0 rgba(var(--brand-primary-rgb, 229, 9, 20), 0.2)" 
+      }}
       whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={() => onClick(movie)}
       className={cn(
-        "relative rounded-lg overflow-hidden cursor-pointer group bg-zinc-900 border border-white/5",
+        "relative rounded-xl overflow-hidden cursor-pointer group bg-zinc-900 border border-white/5 transition-colors hover:border-brand-primary/50",
         isPoster ? "aspect-[2/3]" : "aspect-video",
         className
       )}
@@ -299,17 +304,35 @@ const MovieCard = ({
         src={getImageUrl(isPoster ? (movie.poster_path || movie.backdrop_path) : (movie.backdrop_path || movie.poster_path))}
         alt={movie.title || movie.name}
         className={cn(
-          "w-full h-full object-cover transition-all duration-700 ease-in-out scale-105 group-hover:scale-100 opacity-60 group-hover:opacity-100",
+          "w-full h-full object-cover transition-all duration-700 ease-in-out scale-105 group-hover:scale-110 opacity-70 group-hover:opacity-100",
           colorful ? "grayscale-0 opacity-100" : "grayscale group-hover:grayscale-0"
         )}
         loading="lazy"
         referrerPolicy="no-referrer"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
-        <p className="text-xs font-black text-white uppercase tracking-tighter line-clamp-1">{movie.title || movie.name}</p>
-        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">
-          {new Date(movie.release_date || movie.first_air_date || "").getFullYear()} • {movie.vote_average?.toFixed(1) || "N/A"}
-        </p>
+      
+      {/* Hover Overlay with Play Icon */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 z-20">
+        <div className="w-14 h-14 bg-brand-primary rounded-full flex items-center justify-center shadow-2xl scale-50 group-hover:scale-100 transition-transform duration-500">
+          <Play size={24} className="fill-white text-white ml-1" />
+        </div>
+      </div>
+
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent flex flex-col justify-end p-5 z-10 transition-opacity duration-300">
+        <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+          <p className="text-sm font-black text-white uppercase tracking-tighter line-clamp-1 group-hover:text-brand-primary transition-colors mb-1">
+            {movie.title || movie.name}
+          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
+              {new Date(movie.release_date || movie.first_air_date || "").getFullYear()}
+            </p>
+            <span className="w-1 h-1 bg-zinc-600 rounded-full" />
+            <p className="text-[10px] text-brand-primary font-black uppercase tracking-widest">
+              ★ {movie.vote_average?.toFixed(1) || "N/A"}
+            </p>
+          </div>
+        </div>
       </div>
     </motion.div>
   );
