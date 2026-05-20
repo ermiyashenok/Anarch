@@ -31,6 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
+      console.log('Attempting upsert to watchlist table...', { userId, movieId: movie.id });
       const { data, error } = await supabase
         .from('watchlist')
         .upsert([
@@ -48,11 +49,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase upsert error:', error);
+        throw error;
+      }
+      console.log('✓ Successfully upserted to watchlist:', data);
       return res.status(200).json(data);
     } catch (error: any) {
       console.error('Add to watchlist error:', error.message);
-      return res.status(500).json({ error: 'Failed to save to watchlist' });
+      return res.status(500).json({ error: 'Failed to save to watchlist', details: error.message });
     }
   }
 

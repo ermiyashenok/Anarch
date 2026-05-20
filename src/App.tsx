@@ -26,11 +26,13 @@ import {
   Clock,
   History,
   Sparkles,
-  UserCheck
+  UserCheck,
+  LogOut
 } from "lucide-react";
 import { tmdbService, getImageUrl } from "./services/tmdb";
 import { Movie, MovieDetails, Cast } from "./types";
 import { cn } from "./lib/utils";
+import { AuthPage } from "./pages/Auth";
 
 // --- Hooks ---
 
@@ -112,7 +114,7 @@ const WatchlistItem = ({
   );
 };
 
-const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick }: { activeTab: string, setActiveTab: (tab: string) => void, onCsvUpload: () => void, onSearchClick: () => void }) => {
+const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick, user, onLogout }: { activeTab: string, setActiveTab: (tab: string) => void, onCsvUpload: () => void, onSearchClick: () => void, user: any, onLogout: () => void }) => {
   const tabs = [
     { id: "discovery", label: "Discovery", icon: Film },
     { id: "movies", label: "Movies", icon: Film },
@@ -120,6 +122,8 @@ const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick }: { activ
     { id: "watchlist", label: "Watchlist", icon: Plus },
     { id: "trending", label: "Recent", icon: TrendingUp },
   ];
+
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 h-16 bg-brand-bg/80 backdrop-blur-2xl border-b border-white/5 z-50 px-8 flex items-center justify-between">
@@ -162,19 +166,56 @@ const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick }: { activ
         >
           <SearchIcon size={20} />
         </button>
-        <button
-          onClick={() => setActiveTab("account")}
-          className={cn(
-            "flex items-center gap-2 p-2 rounded-xl transition-all border",
-            activeTab === "account"
-              ? "bg-brand-primary/10 border-brand-primary/20 text-brand-primary shadow-lg shadow-brand-primary/10"
-              : "bg-white/5 border-white/5 text-white/30 hover:text-white hover:bg-white/10"
-          )}
-          title="Account"
-        >
-          <User size={20} />
-          <span className="text-[10px] font-black uppercase tracking-widest hidden lg:block pr-1">Account</span>
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className={cn(
+              "flex items-center gap-2 p-2 rounded-xl transition-all border",
+              activeTab === "account" || showUserMenu
+                ? "bg-brand-primary/10 border-brand-primary/20 text-brand-primary shadow-lg shadow-brand-primary/10"
+                : "bg-white/5 border-white/5 text-white/30 hover:text-white hover:bg-white/10"
+            )}
+            title="Account"
+          >
+            <User size={20} />
+            <span className="text-[10px] font-black uppercase tracking-widest hidden lg:block pr-1">{user.username || user.name}</span>
+          </button>
+          
+          <AnimatePresence>
+            {showUserMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute top-14 right-0 bg-brand-sidebar border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-[100] min-w-48"
+              >
+                <button
+                  onClick={() => {
+                    setActiveTab("account");
+                    setShowUserMenu(false);
+                  }}
+                  className="w-full px-6 py-3 text-left text-sm font-black uppercase tracking-widest text-white hover:bg-white/5 border-b border-white/5 transition-colors flex items-center gap-3"
+                >
+                  <User size={16} /> Profile
+                </button>
+                {user.isGuest && (
+                  <div className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-brand-primary bg-brand-primary/5">
+                    Guest Mode
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    onLogout();
+                    setShowUserMenu(false);
+                  }}
+                  className="w-full px-6 py-3 text-left text-sm font-black uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-3"
+                >
+                  <LogOut size={16} /> Logout
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </nav>
   );
@@ -1081,6 +1122,33 @@ const AccountView = ({
 };
 
 export default function App() {
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    try {
+      const saved = localStorage.getItem("anarch_auth");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const handleAuthSuccess = (user: { id: string; username: string; isGuest?: boolean }) => {
+    const authData = { ...user, loginTime: Date.now() };
+    localStorage.setItem("anarch_auth", JSON.stringify(authData));
+    setIsAuthenticated(authData);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("anarch_auth");
+    setIsAuthenticated(null);
+    setActiveTab("home");
+  };
+
+  // Show auth page if not authenticated
+  if (!isAuthenticated) {
+    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+  }
+
   const [activeTab, setActiveTab] = useState("home");
   const [discoveryType, setDiscoveryType] = useState<"movie" | "tv">("movie");
   const [searchQuery, setSearchQuery] = useState("");
@@ -1583,6 +1651,8 @@ export default function App() {
           setActiveTab={setActiveTab}
           onCsvUpload={() => {}}
           onSearchClick={() => {}}
+          user={isAuthenticated}
+          onLogout={handleLogout}
         />
         <main className="min-h-screen pt-16 transition-all duration-300 flex flex-col relative overflow-x-hidden">
           <div className="flex-1 px-10 py-10 space-y-16 overflow-x-hidden">
@@ -1632,6 +1702,8 @@ export default function App() {
         setActiveTab={setActiveTab}
         onCsvUpload={() => fileInputRef.current?.click()}
         onSearchClick={() => setShowSearchOverlay(true)}
+        user={isAuthenticated}
+        onLogout={handleLogout}
       />
 
       <SearchOverlay
