@@ -188,7 +188,8 @@ const SearchOverlay = ({
   setQuery,
   results,
   recentSearches,
-  onClearRecent
+  onClearRecent,
+  recommendations
 }: {
   isOpen: boolean,
   onClose: () => void,
@@ -197,7 +198,8 @@ const SearchOverlay = ({
   setQuery: (q: string) => void,
   results: Movie[],
   recentSearches: string[],
-  onClearRecent: () => void
+  onClearRecent: () => void,
+  recommendations: Movie[]
 }) => {
   return (
     <AnimatePresence>
@@ -275,13 +277,23 @@ const SearchOverlay = ({
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Popular Categories</h3>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    {["Action", "Sci-Fi", "Comedy", "Horror", "Drama", "Animation"].map(cat => (
+                    {[
+                      { name: "Action", icon: "💥", color: "from-orange-500/20 to-red-500/20", borderColor: "border-orange-500/20 hover:border-orange-500/50" },
+                      { name: "Sci-Fi", icon: "🚀", color: "from-blue-500/20 to-indigo-500/20", borderColor: "border-blue-500/20 hover:border-blue-500/50" },
+                      { name: "Comedy", icon: "😂", color: "from-yellow-500/20 to-amber-500/20", borderColor: "border-yellow-500/20 hover:border-yellow-500/50" },
+                      { name: "Horror", icon: "👻", color: "from-zinc-500/20 to-zinc-800/20", borderColor: "border-zinc-500/20 hover:border-zinc-500/50" },
+                      { name: "Drama", icon: "🎭", color: "from-emerald-500/20 to-teal-500/20", borderColor: "border-emerald-500/20 hover:border-emerald-500/50" },
+                      { name: "Animation", icon: "🎨", color: "from-pink-500/20 to-rose-500/20", borderColor: "border-pink-500/20 hover:border-pink-500/50" }
+                    ].map(cat => (
                       <button
-                        key={cat}
-                        onClick={() => setQuery(cat)}
-                        className="p-4 bg-white/5 border border-white/5 rounded-2xl text-left hover:bg-brand-primary/10 hover:border-brand-primary/20 transition-all group"
+                        key={cat.name}
+                        onClick={() => setQuery(cat.name)}
+                        className={`p-4 bg-gradient-to-br ${cat.color} border ${cat.borderColor} rounded-2xl text-left hover:scale-[1.02] transition-all group relative overflow-hidden`}
                       >
-                        <p className="text-xs font-black uppercase tracking-widest text-white/60 group-hover:text-brand-primary">{cat}</p>
+                        <div className="absolute -right-2 -bottom-2 text-4xl opacity-40 group-hover:scale-110 group-hover:-rotate-12 transition-transform">
+                          {cat.icon}
+                        </div>
+                        <p className="text-xs font-black uppercase tracking-widest text-white/80 group-hover:text-white relative z-10">{cat.name}</p>
                       </button>
                     ))}
                   </div>
@@ -291,8 +303,33 @@ const SearchOverlay = ({
                     <UserCheck size={16} className="text-brand-primary" />
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Recommended for You</h3>
                   </div>
-                  <div className="space-y-3">
-                    <p className="text-xs text-white/20 px-2 italic font-medium">Explore trending titles and curated collections...</p>
+                  <div className="space-y-4">
+                    {recommendations.slice(0, 4).map((movie, idx) => (
+                      <button
+                        key={movie.id}
+                        onClick={() => {
+                          onMovieClick(movie);
+                          onClose();
+                        }}
+                        className="w-full flex items-center gap-4 p-3 bg-white/5 border border-white/5 rounded-2xl text-left hover:bg-brand-primary/10 hover:border-brand-primary/20 transition-all group"
+                      >
+                        {movie.poster_path ? (
+                          <img 
+                            src={getImageUrl(movie.poster_path, "w92")} 
+                            alt={movie.title || movie.name}
+                            className="w-12 h-16 object-cover rounded-lg shadow-md"
+                          />
+                        ) : (
+                          <div className="w-12 h-16 bg-zinc-800 rounded-lg flex items-center justify-center">
+                            <Film size={16} className="text-white/20" />
+                          </div>
+                        )}
+                        <div className="flex-1 overflow-hidden">
+                          <p className="text-sm font-bold text-white truncate group-hover:text-brand-primary transition-colors">{movie.title || movie.name}</p>
+                          <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">{movie.title ? "Movie" : "Series"} • {new Date(movie.release_date || movie.first_air_date || "").getFullYear()}</p>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1646,6 +1683,7 @@ export default function App() {
         recentSearches={recentSearches}
         onClearRecent={() => setRecentSearches([])}
         onMovieClick={handleMovieSelect}
+        recommendations={trending}
       />
 
       <input
