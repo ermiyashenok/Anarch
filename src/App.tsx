@@ -303,7 +303,7 @@ const SearchOverlay = ({
                     <UserCheck size={16} className="text-brand-primary" />
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Recommended for You</h3>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-4 overflow-visible">
                     {recommendations.slice(0, 4).map((movie, idx) => (
                       <button
                         key={movie.id}
@@ -311,7 +311,7 @@ const SearchOverlay = ({
                           onMovieClick(movie);
                           onClose();
                         }}
-                        className="w-full flex items-center gap-4 p-3 bg-white/5 border border-white/5 rounded-2xl text-left hover:bg-brand-primary/10 hover:border-brand-primary/20 transition-all group"
+                        className="w-full flex items-center gap-4 p-3 bg-white/5 border border-white/5 rounded-2xl text-left hover:bg-brand-primary/10 hover:border-brand-primary/20 transition-transform duration-200 group"
                       >
                         {movie.poster_path ? (
                           <img 
@@ -427,11 +427,7 @@ const MovieCard = ({
   const isPoster = variant === "poster";
   return (
     <motion.div
-      whileHover={{
-        scale: 1.04,
-        y: -5,
-        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 30px 0 rgba(var(--brand-primary-rgb, 229, 9, 20), 0.2)"
-      }}
+
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={() => onClick(movie)}
@@ -452,7 +448,7 @@ const MovieCard = ({
         src={getImageUrl(isPoster ? (movie.poster_path || movie.backdrop_path) : (movie.backdrop_path || movie.poster_path))}
         alt={movie.title || movie.name}
         className={cn(
-          "w-full h-full object-cover transition-all duration-700 ease-in-out scale-105 group-hover:scale-110 opacity-70 group-hover:opacity-100",
+          "w-full h-full object-cover transition-all duration-700 ease-in-out opacity-70 group-hover:opacity-100",
           colorful ? "grayscale-0 opacity-100" : "grayscale group-hover:grayscale-0"
         )}
         loading="lazy"
