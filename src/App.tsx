@@ -117,7 +117,7 @@ const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick }: { activ
     { id: "discovery", label: "Discovery", icon: Film },
     { id: "movies", label: "Movies", icon: Film },
     { id: "tv", label: "Series", icon: Tv },
-    { id: "watchlist", label: "Watchlist", icon: Plus },
+    { id: "anime", label: "Anime", icon: Film },
     { id: "trending", label: "Recent", icon: TrendingUp },
   ];
 
@@ -1083,7 +1083,7 @@ const AccountView = ({
                     <div className="relative w-24 aspect-video rounded-lg overflow-hidden flex-none">
                       <img
                         src={getImageUrl(movie.backdrop_path || movie.poster_path)}
-                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"
+                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-500"
                         alt=""
                         referrerPolicy="no-referrer"
                       />
@@ -1133,6 +1133,9 @@ export default function App() {
   const [topRated, setTopRated] = useState<Movie[]>([]);
   const [upcoming, setUpcoming] = useState<Movie[]>([]);
   const [series, setSeries] = useState<Movie[]>([]);
+  const [anime, setAnime] = useState<Movie[]>([]);
+  const [animeType, setAnimeType] = useState<"tv" | "movie">("tv");
+  const [animeLoading, setAnimeLoading] = useState(false);
   const [actionMovies, setActionMovies] = useState<Movie[]>([]);
   const [scifiMovies, setScifiMovies] = useState<Movie[]>([]);
   const [animationMovies, setAnimationMovies] = useState<Movie[]>([]);
@@ -1559,6 +1562,24 @@ export default function App() {
     }
   };
 
+  // Fetch anime whenever the Anime tab is active or the movie/tv toggle changes
+  useEffect(() => {
+    if (activeTab !== "anime") return;
+    const fetchAnime = async () => {
+      setAnimeLoading(true);
+      try {
+        const results = await tmdbService.getAnime(animeType, 1);
+        setAnime(uniqueMovies(results));
+        setPage(1);
+      } catch (e) {
+        console.error("Failed to fetch anime:", e);
+      } finally {
+        setAnimeLoading(false);
+      }
+    };
+    fetchAnime();
+  }, [activeTab, animeType]);
+
   useEffect(() => {
     if (debouncedSearchQuery.length > 2) {
       const performSearch = async () => {
@@ -1596,6 +1617,9 @@ export default function App() {
       if (activeTab === "movies") {
         const more = await tmdbService.getPopular("movie", nextPage);
         setPopular(prev => uniqueMovies([...prev, ...more]));
+      } else if (activeTab === "anime") {
+        const more = await tmdbService.getAnime(animeType, nextPage);
+        setAnime(prev => uniqueMovies([...prev, ...more]));
       } else if (activeTab === "tv") {
         const more = await tmdbService.getSeries(nextPage);
         setSeries(prev => uniqueMovies([...prev, ...more]));
@@ -1979,6 +2003,62 @@ export default function App() {
                     </button>
                   </div>
                 </>
+              )}
+              {activeTab === "anime" && (
+                <section className="mb-24">
+                  {/* Header + toggle */}
+                  <div className="flex items-center justify-between mb-10 px-2">
+                    <h2 className="text-xl md:text-2xl font-display font-black text-white uppercase tracking-tighter italic">
+                      🎌 Anime
+                    </h2>
+                    <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-1">
+                      <button
+                        onClick={() => { setAnimeType("tv"); }}
+                        className={cn(
+                          "px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                          animeType === "tv" ? "bg-brand-primary text-white shadow-lg" : "text-white/40 hover:text-white"
+                        )}
+                      >
+                        Series
+                      </button>
+                      <button
+                        onClick={() => { setAnimeType("movie"); }}
+                        className={cn(
+                          "px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                          animeType === "movie" ? "bg-brand-primary text-white shadow-lg" : "text-white/40 hover:text-white"
+                        )}
+                      >
+                        Movies
+                      </button>
+                    </div>
+                  </div>
+
+                  {animeLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <MovieCardSkeleton key={i} variant="landscape" />
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {anime.map(item => (
+                          <ScrollAnimatedItem key={item.id}>
+                            <MovieCard movie={item} onClick={handleMovieSelect} className="w-full" />
+                          </ScrollAnimatedItem>
+                        ))}
+                      </div>
+                      <div className="flex justify-center pt-8">
+                        <button
+                          onClick={loadMore}
+                          className="px-12 py-4 bg-white/5 border border-white/10 text-white font-black rounded uppercase tracking-widest hover:bg-white/10 transition-all"
+                        >
+                          Load More Anime
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </section>
               )}
               {activeTab === "tv" && (
                 <>

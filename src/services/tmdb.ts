@@ -29,7 +29,8 @@ tmdbApi.interceptors.request.use((config) => {
   return config;
 });
 
-export const getImageUrl = (path: string | null | undefined, size: "w500" | "original" = "w500") => {
+type ImageSize = "w92" | "w154" | "w185" | "w300" | "w500" | "original";
+export const getImageUrl = (path: string | null | undefined, size: ImageSize = "w500") => {
   if (!path) return "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=500&auto=format&fit=crop";
   return `${IMAGE_BASE_URL}/${size}${path}`;
 };
@@ -111,6 +112,23 @@ export const tmdbService = {
         page: 1
       },
     });
+    return data.results;
+  },
+  // Anime: Japanese-language Animation (genre 16) — both movie and TV
+  getAnime: async (type: "movie" | "tv" = "tv", page: number = 1): Promise<Movie[]> => {
+    const { data } = await tmdbApi.get(`/discover/${type}`, {
+      params: {
+        with_original_language: "ja",
+        with_genres: 16, // Animation genre ID on TMDB
+        sort_by: "popularity.desc",
+        "vote_count.gte": 50,
+        page,
+      },
+    });
+    // Tag TV results so the rest of the app knows the media_type
+    if (type === "tv") {
+      return data.results.map((r: any) => ({ ...r, media_type: "tv" }));
+    }
     return data.results;
   },
 };
