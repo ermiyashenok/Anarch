@@ -131,4 +131,18 @@ export const tmdbService = {
     }
     return data.results;
   },
+  // Search anime — search TMDB then keep only Japanese-language Animation results
+  searchAnime: async (query: string): Promise<Movie[]> => {
+    // Search both movie and tv in parallel
+    const [moviesRes, tvRes] = await Promise.all([
+      tmdbApi.get("/search/movie", { params: { query, page: 1 } }),
+      tmdbApi.get("/search/tv",    { params: { query, page: 1 } }),
+    ]);
+    const movies: Movie[] = moviesRes.data.results.map((r: any) => ({ ...r, media_type: "movie" }));
+    const tv: Movie[]     = tvRes.data.results.map((r: any) => ({ ...r, media_type: "tv" }));
+    // Filter: must be Japanese original language AND include Animation genre (16)
+    const isAnime = (item: Movie) =>
+      item.original_language === "ja" && (item.genre_ids ?? []).includes(16);
+    return [...movies, ...tv].filter(isAnime);
+  },
 };

@@ -9,6 +9,7 @@ export interface Movie {
   release_date?: string;
   first_air_date?: string;
   genre_ids: number[];
+  original_language?: string;
   media_type?: "movie" | "tv";
 }
 

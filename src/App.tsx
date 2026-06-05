@@ -1136,6 +1136,10 @@ export default function App() {
   const [anime, setAnime] = useState<Movie[]>([]);
   const [animeType, setAnimeType] = useState<"tv" | "movie">("tv");
   const [animeLoading, setAnimeLoading] = useState(false);
+  const [animeSearchQuery, setAnimeSearchQuery] = useState("");
+  const [animeSearchResults, setAnimeSearchResults] = useState<Movie[]>([]);
+  const [animeSearching, setAnimeSearching] = useState(false);
+  const debouncedAnimeQuery = useDebounce(animeSearchQuery, 400);
   const [actionMovies, setActionMovies] = useState<Movie[]>([]);
   const [scifiMovies, setScifiMovies] = useState<Movie[]>([]);
   const [animationMovies, setAnimationMovies] = useState<Movie[]>([]);
@@ -1561,6 +1565,26 @@ export default function App() {
       console.error(err);
     }
   };
+
+  // Anime search effect
+  useEffect(() => {
+    if (debouncedAnimeQuery.length < 2) {
+      setAnimeSearchResults([]);
+      return;
+    }
+    const doSearch = async () => {
+      setAnimeSearching(true);
+      try {
+        const results = await tmdbService.searchAnime(debouncedAnimeQuery);
+        setAnimeSearchResults(uniqueMovies(results));
+      } catch (e) {
+        console.error("Anime search failed:", e);
+      } finally {
+        setAnimeSearching(false);
+      }
+    };
+    doSearch();
+  }, [debouncedAnimeQuery]);
 
   // Fetch anime whenever the Anime tab is active or the movie/tv toggle changes
   useEffect(() => {
@@ -2006,14 +2030,14 @@ export default function App() {
               )}
               {activeTab === "anime" && (
                 <section className="mb-24">
-                  {/* Header + toggle */}
-                  <div className="flex items-center justify-between mb-10 px-2">
+                  {/* Header row: title + toggle */}
+                  <div className="flex items-center justify-between mb-6 px-2">
                     <h2 className="text-xl md:text-2xl font-display font-black text-white uppercase tracking-tighter italic">
                       🎌 Anime
                     </h2>
                     <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-1">
                       <button
-                        onClick={() => { setAnimeType("tv"); }}
+                        onClick={() => { setAnimeType("tv"); setAnimeSearchQuery(""); }}
                         className={cn(
                           "px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
                           animeType === "tv" ? "bg-brand-primary text-white shadow-lg" : "text-white/40 hover:text-white"
@@ -2022,7 +2046,7 @@ export default function App() {
                         Series
                       </button>
                       <button
-                        onClick={() => { setAnimeType("movie"); }}
+                        onClick={() => { setAnimeType("movie"); setAnimeSearchQuery(""); }}
                         className={cn(
                           "px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
                           animeType === "movie" ? "bg-brand-primary text-white shadow-lg" : "text-white/40 hover:text-white"
@@ -2033,7 +2057,57 @@ export default function App() {
                     </div>
                   </div>
 
-                  {animeLoading ? (
+                  {/* Anime search bar */}
+                  <div className="relative mb-10 px-2">
+                    <div className="relative group max-w-xl">
+                      <SearchIcon
+                        size={18}
+                        className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-brand-primary transition-colors"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Search anime..."
+                        value={animeSearchQuery}
+                        onChange={e => setAnimeSearchQuery(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-sm font-medium outline-none focus:border-brand-primary/40 focus:bg-white/10 transition-all placeholder:text-white/20"
+                      />
+                      {animeSearchQuery && (
+                        <button
+                          onClick={() => setAnimeSearchQuery("")}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Search results or default grid */}
+                  {animeSearchQuery.length >= 2 ? (
+                    animeSearching ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <MovieCardSkeleton key={i} variant="landscape" />
+                        ))}
+                      </div>
+                    ) : animeSearchResults.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {animeSearchResults.map(item => (
+                          <ScrollAnimatedItem key={item.id}>
+                            <MovieCard movie={item} onClick={handleMovieSelect} className="w-full" />
+                          </ScrollAnimatedItem>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-64 text-center">
+                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
+                          <SearchIcon size={24} className="text-white/10" />
+                        </div>
+                        <p className="text-white/40 font-bold">No anime found for "{animeSearchQuery}"</p>
+                        <p className="text-white/20 text-sm mt-2">Try a different title or check your spelling</p>
+                      </div>
+                    )
+                  ) : animeLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {Array.from({ length: 6 }).map((_, i) => (
                         <MovieCardSkeleton key={i} variant="landscape" />
