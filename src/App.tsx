@@ -118,7 +118,9 @@ const Navbar = ({ activeTab, setActiveTab, onCsvUpload, onSearchClick }: { activ
     { id: "movies", label: "Movies", icon: Film },
     { id: "tv", label: "Series", icon: Tv },
     { id: "anime", label: "Anime", icon: Film },
+    { id: "watchlist", label: "Watchlist", icon: Plus },
     { id: "trending", label: "Recent", icon: TrendingUp },
+
   ];
 
   return (
@@ -314,8 +316,8 @@ const SearchOverlay = ({
                         className="w-full flex items-center gap-4 p-3 bg-white/5 border border-white/5 rounded-2xl text-left hover:bg-brand-primary/10 hover:border-brand-primary/20 transition-transform duration-200 group"
                       >
                         {movie.poster_path ? (
-                          <img 
-                            src={getImageUrl(movie.poster_path, "w92")} 
+                          <img
+                            src={getImageUrl(movie.poster_path, "w92")}
                             alt={movie.title || movie.name}
                             className="w-12 h-16 object-cover rounded-lg shadow-md"
                           />
@@ -1662,15 +1664,15 @@ export default function App() {
         <Navbar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          onCsvUpload={() => {}}
-          onSearchClick={() => {}}
+          onCsvUpload={() => { }}
+          onSearchClick={() => { }}
         />
         <main className="min-h-screen pt-16 transition-all duration-300 flex flex-col relative overflow-x-hidden">
           <div className="flex-1 px-10 py-10 space-y-16 overflow-x-hidden">
             <HeroSkeleton />
-            <MovieSection title="Trending Global" movies={[]} onMovieClick={() => {}} isLoading={true} />
-            <MovieSection title="Popular Movies" movies={[]} onMovieClick={() => {}} variant="poster" isLoading={true} />
-            <MovieSection title="Action & Adventure" movies={[]} onMovieClick={() => {}} isLoading={true} />
+            <MovieSection title="Trending Global" movies={[]} onMovieClick={() => { }} isLoading={true} />
+            <MovieSection title="Popular Movies" movies={[]} onMovieClick={() => { }} variant="poster" isLoading={true} />
+            <MovieSection title="Action & Adventure" movies={[]} onMovieClick={() => { }} isLoading={true} />
           </div>
         </main>
       </div>
