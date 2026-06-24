@@ -735,7 +735,7 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay, onMo
               <div>
                 <h4 className="text-zinc-500 font-bold text-sm uppercase tracking-widest mb-4">Available on</h4>
                 <div className="p-6 bg-zinc-900/50 rounded-3xl border border-zinc-800 flex items-center justify-center">
-                  <span className="text-zinc-500">VidKing HD Stream Available</span>
+                  <span className="text-zinc-500">Vidsrc HD Stream Available</span>
                 </div>
               </div>
 
@@ -1270,26 +1270,18 @@ export default function App() {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       try {
-        let parsed = event.data;
-        
-        // If the data is a string, attempt to parse it
-        if (typeof event.data === "string") {
-          try {
-            parsed = JSON.parse(event.data);
-          } catch (e) {
-            // Not a valid JSON string, ignore
-            return;
-          }
-        }
-
-        // Check if it matches the player event structure
-        if (parsed && parsed.type === "PLAYER_EVENT") {
-          console.log("Message received from the player: ", parsed);
-          
-          // Optionally display the raw string data if messageArea exists
-          const messageArea = document.querySelector("#messageArea") as HTMLElement;
-          if (messageArea) {
-            messageArea.innerText = typeof event.data === "string" ? event.data : JSON.stringify(parsed);
+        if (event.data?.type === 'MEDIA_DATA') {
+          const mediaData = event.data.data;
+          if (mediaData.id && (mediaData.type === 'movie' || mediaData.type === 'tv')) {
+            const STORAGE_KEY = 'watch_progress';
+            let watchProgress = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            watchProgress[mediaData.id] = {
+              ...watchProgress[mediaData.id],
+              ...mediaData,
+              last_updated: Date.now()
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(watchProgress));
+            console.log('Progress updated:', mediaData);
           }
         }
       } catch (e) {
@@ -1504,7 +1496,7 @@ export default function App() {
       if (isTv) {
         const s = season || 1;
         const ep = episode || 1;
-        const url = `https://www.vidking.net/embed/tv/${movie.id}/${s}/${ep}`;
+        const url = `https://vidsrc.ru/tv/${movie.id}/${s}/${ep}?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`;
         setPlayerSeason(s);
         setPlayerEpisode(ep);
         // Fetch details for total seasons
@@ -1516,7 +1508,7 @@ export default function App() {
         }
         setPlayerUrl(url);
       } else {
-        const url = `https://www.vidking.net/embed/movie/${movie.id}`;
+        const url = `https://vidsrc.ru/movie/${movie.id}?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`;
         setPlayerUrl(url);
       }
 
@@ -1527,8 +1519,8 @@ export default function App() {
       // Fallback: still try with TMDB ID
       const isTv = !movie.title;
       const url = isTv
-        ? `https://www.vidking.net/embed/tv/${movie.id}/${season || 1}/${episode || 1}`
-        : `https://www.vidking.net/embed/movie/${movie.id}`;
+        ? `https://vidsrc.ru/tv/${movie.id}/${season || 1}/${episode || 1}?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`
+        : `https://vidsrc.ru/movie/${movie.id}?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`;
       setPlayerUrl(url);
       setGlobalPlayerMovie(movie);
       setShowGlobalPlayer(true);
@@ -2580,7 +2572,7 @@ export default function App() {
                         const s = Number(e.target.value);
                         setPlayerSeason(s);
                         setPlayerEpisode(1);
-                        setPlayerUrl(`https://www.vidking.net/embed/tv/${globalPlayerMovie.id}/${s}/1`);
+                        setPlayerUrl(`https://vidsrc.ru/tv/${globalPlayerMovie.id}/${s}/1?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`);
                       }}
                       className="bg-white/5 border border-white/10 rounded-xl px-6 py-3 text-sm font-black text-white outline-none focus:border-brand-primary/50 cursor-pointer hover:bg-white/10 transition-all uppercase tracking-widest"
                     >
@@ -2596,7 +2588,7 @@ export default function App() {
                         key={ep.id}
                         onClick={() => {
                           setPlayerEpisode(ep.episode_number);
-                          setPlayerUrl(`https://www.vidking.net/embed/tv/${globalPlayerMovie.id}/${playerSeason}/${ep.episode_number}`);
+                          setPlayerUrl(`https://vidsrc.ru/tv/${globalPlayerMovie.id}/${playerSeason}/${ep.episode_number}?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`);
                           const playerEl = document.getElementById("global-player-iframe");
                           if (playerEl) playerEl.scrollIntoView({ behavior: "smooth" });
                         }}
