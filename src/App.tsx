@@ -1496,7 +1496,7 @@ export default function App() {
       if (isTv) {
         const s = season || 1;
         const ep = episode || 1;
-        const url = `https://vidsrc.ru/tv/${movie.id}/${s}/${ep}?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`;
+        const url = `https://vidsrc.ru/tv/${movie.id}/${s}/${ep}?colour=ff0000&autoplay=true&autonextepisode=true&backbutton=https%3A%2F%2Fvidsrc.ru%2F&pausescreen=true`;
         setPlayerSeason(s);
         setPlayerEpisode(ep);
         // Fetch details for total seasons
@@ -1508,7 +1508,7 @@ export default function App() {
         }
         setPlayerUrl(url);
       } else {
-        const url = `https://vidsrc.ru/movie/${movie.id}?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`;
+        const url = `https://vidsrc.ru/movie/${movie.id}?colour=ff0000&autoplay=true&autonextepisode=true&backbutton=https%3A%2F%2Fvidsrc.ru%2F&pausescreen=true`;
         setPlayerUrl(url);
       }
 
@@ -1519,8 +1519,8 @@ export default function App() {
       // Fallback: still try with TMDB ID
       const isTv = !movie.title;
       const url = isTv
-        ? `https://vidsrc.ru/tv/${movie.id}/${season || 1}/${episode || 1}?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`
-        : `https://vidsrc.ru/movie/${movie.id}?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`;
+        ? `https://vidsrc.ru/tv/${movie.id}/${season || 1}/${episode || 1}?colour=ff0000&autoplay=true&autonextepisode=true&backbutton=https%3A%2F%2Fvidsrc.ru%2F&pausescreen=true`
+        : `https://vidsrc.ru/movie/${movie.id}?colour=ff0000&autoplay=true&autonextepisode=true&backbutton=https%3A%2F%2Fvidsrc.ru%2F&pausescreen=true`;
       setPlayerUrl(url);
       setGlobalPlayerMovie(movie);
       setShowGlobalPlayer(true);
@@ -2519,10 +2519,10 @@ export default function App() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-6xl mx-auto h-fit min-h-[80vh] flex flex-col md:rounded-3xl shadow-2xl"
+              className="relative w-full max-w-full mx-auto flex flex-col md:rounded-3xl shadow-2xl bg-black"
             >
               {/* Player Area */}
-              <div className="relative w-full aspect-video bg-black md:rounded-t-3xl overflow-hidden flex-none border border-white/10">
+              <div className="relative w-full h-[100vh] md:h-[95vh] bg-black md:rounded-t-3xl overflow-hidden flex-none border-b border-white/10">
                 <button
                   onClick={() => setShowGlobalPlayer(false)}
                   className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-white/10 text-white rounded-full transition-all z-[210] backdrop-blur-md border border-white/10"
@@ -2560,7 +2560,7 @@ export default function App() {
 
               {/* TV Show Episode List */}
               {playerIsTv && (
-                <div className="p-6 md:p-10 bg-zinc-950 md:rounded-b-3xl border border-white/10 border-t-0 flex-1">
+                <div className="p-6 md:p-10 bg-zinc-950 md:rounded-b-3xl border border-white/10 border-t-0 flex-none">
                   <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
                       <Tv size={24} className="text-brand-primary" />
@@ -2572,7 +2572,7 @@ export default function App() {
                         const s = Number(e.target.value);
                         setPlayerSeason(s);
                         setPlayerEpisode(1);
-                        setPlayerUrl(`https://vidsrc.ru/tv/${globalPlayerMovie.id}/${s}/1?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`);
+                        setPlayerUrl(`https://vidsrc.ru/tv/${globalPlayerMovie.id}/${s}/1?colour=ff0000&autoplay=true&autonextepisode=true&backbutton=https%3A%2F%2Fvidsrc.ru%2F&pausescreen=true`);
                       }}
                       className="bg-white/5 border border-white/10 rounded-xl px-6 py-3 text-sm font-black text-white outline-none focus:border-brand-primary/50 cursor-pointer hover:bg-white/10 transition-all uppercase tracking-widest"
                     >
@@ -2588,7 +2588,7 @@ export default function App() {
                         key={ep.id}
                         onClick={() => {
                           setPlayerEpisode(ep.episode_number);
-                          setPlayerUrl(`https://vidsrc.ru/tv/${globalPlayerMovie.id}/${playerSeason}/${ep.episode_number}?autoplay=true&colour=00ff9d&backbutton=https://vidsrc.ru/&logo=https://vidsrc.ru/logo.png`);
+                          setPlayerUrl(`https://vidsrc.ru/tv/${globalPlayerMovie.id}/${playerSeason}/${ep.episode_number}?colour=ff0000&autoplay=true&autonextepisode=true&backbutton=https%3A%2F%2Fvidsrc.ru%2F&pausescreen=true`);
                           const playerEl = document.getElementById("global-player-iframe");
                           if (playerEl) playerEl.scrollIntoView({ behavior: "smooth" });
                         }}
