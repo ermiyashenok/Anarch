@@ -29,7 +29,7 @@ import {
   UserCheck
 } from "lucide-react";
 import { tmdbService, getImageUrl } from "./services/tmdb";
-import { Movie, MovieDetails, Cast } from "./types";
+import { Movie, MovieDetails, Cast, Episode } from "./types";
 import { cn } from "./lib/utils";
 
 // --- Hooks ---
@@ -546,13 +546,17 @@ const MovieSection = ({
   );
 };
 
-const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay, onMovieSelect }: { movie: Movie, onBack: () => void, watchlist: Movie[], onToggleWatchlist: (m: Movie) => void, onPlay: (m: Movie) => void, onMovieSelect: (m: Movie) => void }) => {
+const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay, onMovieSelect }: { movie: Movie, onBack: () => void, watchlist: Movie[], onToggleWatchlist: (m: Movie) => void, onPlay: (m: Movie, season?: number, episode?: number) => void, onMovieSelect: (m: Movie) => void }) => {
   const [details, setDetails] = useState<MovieDetails | null>(null);
   const [cast, setCast] = useState<Cast[]>([]);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [selectedSeason, setSelectedSeason] = useState(1);
+  const [selectedEpisode, setSelectedEpisode] = useState(1);
+
+  const isTvShow = !movie.title; // TV shows use 'name' instead of 'title'
 
   const isInWatchlist = watchlist.some(m => m.id === movie.id);
 
@@ -650,7 +654,7 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay, onMo
 
             <div className="flex items-center gap-4">
               <button
-                onClick={() => onPlay(movie)}
+                onClick={() => onPlay(movie, isTvShow ? selectedSeason : undefined, isTvShow ? selectedEpisode : undefined)}
                 className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-bold text-lg hover:bg-zinc-200 transition-all active:scale-95 shadow-xl"
               >
                 <Play size={24} className="fill-black" /> Play Now
@@ -731,9 +735,63 @@ const DetailsView = ({ movie, onBack, watchlist, onToggleWatchlist, onPlay, onMo
               <div>
                 <h4 className="text-zinc-500 font-bold text-sm uppercase tracking-widest mb-4">Available on</h4>
                 <div className="p-6 bg-zinc-900/50 rounded-3xl border border-zinc-800 flex items-center justify-center">
-                  <span className="text-zinc-500">Vidsrc HD Stream Available</span>
+                  <span className="text-zinc-500">VidKing HD Stream Available</span>
                 </div>
               </div>
+
+              {/* Season/Episode Selector for TV Shows */}
+              {isTvShow && details && (
+                <div>
+                  <h4 className="text-zinc-500 font-bold text-sm uppercase tracking-widest mb-4">Select Episode</h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-widest block mb-2">Season</label>
+                      <div className="flex flex-wrap gap-2">
+                        {Array.from({ length: details.number_of_seasons || 1 }, (_, i) => i + 1).map(s => (
+                          <button
+                            key={s}
+                            onClick={() => { setSelectedSeason(s); setSelectedEpisode(1); }}
+                            className={cn(
+                              "w-10 h-10 rounded-xl text-xs font-black transition-all",
+                              selectedSeason === s
+                                ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/30"
+                                : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white border border-white/5"
+                            )}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-black text-white/30 uppercase tracking-widest block mb-2">Episode</label>
+                      <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto no-scrollbar">
+                        {Array.from({ length: 30 }, (_, i) => i + 1).map(ep => (
+                          <button
+                            key={ep}
+                            onClick={() => setSelectedEpisode(ep)}
+                            className={cn(
+                              "w-10 h-10 rounded-xl text-xs font-black transition-all",
+                              selectedEpisode === ep
+                                ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/30"
+                                : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white border border-white/5"
+                            )}
+                          >
+                            {ep}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => onPlay(movie, selectedSeason, selectedEpisode)}
+                      className="w-full flex items-center justify-center gap-3 py-4 bg-brand-primary text-white rounded-2xl font-bold hover:bg-brand-primary/80 transition-all active:scale-95 shadow-lg shadow-brand-primary/20"
+                    >
+                      <Play size={20} className="fill-white" />
+                      Play S{selectedSeason}E{selectedEpisode}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1186,6 +1244,11 @@ export default function App() {
   const [globalPlayerMovie, setGlobalPlayerMovie] = useState<Movie | null>(null);
   const [playerUrl, setPlayerUrl] = useState<string>("");
   const [showStreamingIndicator, setShowStreamingIndicator] = useState(false);
+  const [playerSeason, setPlayerSeason] = useState(1);
+  const [playerEpisode, setPlayerEpisode] = useState(1);
+  const [playerTotalSeasons, setPlayerTotalSeasons] = useState(1);
+  const [playerIsTv, setPlayerIsTv] = useState(false);
+  const [playerEpisodes, setPlayerEpisodes] = useState<Episode[]>([]);
 
   useEffect(() => {
     if (showGlobalPlayer) {
@@ -1194,6 +1257,49 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [showGlobalPlayer]);
+
+  useEffect(() => {
+    if (showGlobalPlayer && playerIsTv && globalPlayerMovie) {
+      tmdbService.getSeasonDetails(globalPlayerMovie.id, playerSeason).then(episodes => {
+        setPlayerEpisodes(episodes);
+      });
+    }
+  }, [showGlobalPlayer, playerIsTv, globalPlayerMovie, playerSeason]);
+
+  // Player progress tracking
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        let parsed = event.data;
+        
+        // If the data is a string, attempt to parse it
+        if (typeof event.data === "string") {
+          try {
+            parsed = JSON.parse(event.data);
+          } catch (e) {
+            // Not a valid JSON string, ignore
+            return;
+          }
+        }
+
+        // Check if it matches the player event structure
+        if (parsed && parsed.type === "PLAYER_EVENT") {
+          console.log("Message received from the player: ", parsed);
+          
+          // Optionally display the raw string data if messageArea exists
+          const messageArea = document.querySelector("#messageArea") as HTMLElement;
+          if (messageArea) {
+            messageArea.innerText = typeof event.data === "string" ? event.data : JSON.stringify(parsed);
+          }
+        }
+      } catch (e) {
+        // Ignore errors for unrelated messages
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
 
   // --- Browser History Management ---
   const isPopState = useRef(false);
@@ -1390,23 +1496,40 @@ export default function App() {
     if (movie) addToHistory(movie);
   };
 
-  const handlePlayNow = async (movie: Movie) => {
+  const handlePlayNow = async (movie: Movie, season?: number, episode?: number) => {
     try {
-      const type = movie.title ? "movie" : "tv";
-      const details = await tmdbService.getDetails(movie.id, type);
-      const imdbId = details.imdb_id;
-      const url = imdbId
-        ? `https://www.playimdb.com/title/${imdbId}/`
-        : `https://www.playimdb.com/find?q=${encodeURIComponent(movie.title || movie.name || "")}`;
+      const isTv = !movie.title; // TV shows use 'name' not 'title'
+      setPlayerIsTv(isTv);
 
-      setPlayerUrl(url);
+      if (isTv) {
+        const s = season || 1;
+        const ep = episode || 1;
+        const url = `https://www.vidking.net/embed/tv/${movie.id}/${s}/${ep}`;
+        setPlayerSeason(s);
+        setPlayerEpisode(ep);
+        // Fetch details for total seasons
+        try {
+          const details = await tmdbService.getDetails(movie.id, "tv");
+          setPlayerTotalSeasons(details.number_of_seasons || 1);
+        } catch {
+          setPlayerTotalSeasons(1);
+        }
+        setPlayerUrl(url);
+      } else {
+        const url = `https://www.vidking.net/embed/movie/${movie.id}`;
+        setPlayerUrl(url);
+      }
+
       setGlobalPlayerMovie(movie);
       setShowGlobalPlayer(true);
     } catch (error) {
       console.error("Error playing now", error);
-      const query = movie.title || movie.name;
-      const fallbackUrl = `https://www.playimdb.com/find?q=${encodeURIComponent(query!)}`;
-      setPlayerUrl(fallbackUrl);
+      // Fallback: still try with TMDB ID
+      const isTv = !movie.title;
+      const url = isTv
+        ? `https://www.vidking.net/embed/tv/${movie.id}/${season || 1}/${episode || 1}`
+        : `https://www.vidking.net/embed/movie/${movie.id}`;
+      setPlayerUrl(url);
       setGlobalPlayerMovie(movie);
       setShowGlobalPlayer(true);
     }
@@ -2344,7 +2467,7 @@ export default function App() {
             onBack={() => setSelectedMovie(null)}
             watchlist={watchlist}
             onToggleWatchlist={toggleWatchlist}
-            onPlay={handlePlayNow}
+            onPlay={(m, s, ep) => handlePlayNow(m, s, ep)}
             onMovieSelect={handleMovieSelect}
           />
         )}
@@ -2397,47 +2520,126 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowGlobalPlayer(false)}
-            className="fixed inset-0 z-200 bg-black/95 backdrop-blur-2xl flex items-center justify-center p-0 md:p-6"
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl flex justify-center p-0 md:p-6 overflow-y-auto no-scrollbar"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full h-full max-w-full max-h-screen md:rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-black"
+              className="relative w-full max-w-6xl mx-auto h-fit min-h-[80vh] flex flex-col md:rounded-3xl shadow-2xl"
             >
-              <button
-                onClick={() => setShowGlobalPlayer(false)}
-                className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-white/10 text-white rounded-full transition-all z-210 backdrop-blur-md border border-white/10"
-                title="Close Player"
-              >
-                <X size={24} />
-              </button>
+              {/* Player Area */}
+              <div className="relative w-full aspect-video bg-black md:rounded-t-3xl overflow-hidden flex-none border border-white/10">
+                <button
+                  onClick={() => setShowGlobalPlayer(false)}
+                  className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-white/10 text-white rounded-full transition-all z-[210] backdrop-blur-md border border-white/10"
+                  title="Close Player"
+                >
+                  <X size={24} />
+                </button>
 
-              <AnimatePresence>
-                {showStreamingIndicator && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="absolute top-6 left-6 z-210 pointer-events-none hidden md:block"
-                  >
-                    <div className="flex items-center gap-3 bg-black/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
-                      <div className="w-2 h-2 bg-brand-primary rounded-full animate-pulse" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Streaming: {globalPlayerMovie.title || globalPlayerMovie.name}</span>
+                <AnimatePresence>
+                  {showStreamingIndicator && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="absolute top-6 left-6 z-[210] pointer-events-none hidden md:block"
+                    >
+                      <div className="flex items-center gap-3 bg-black/50 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
+                        <div className="w-2 h-2 bg-brand-primary rounded-full animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Streaming: {globalPlayerMovie.title || globalPlayerMovie.name}</span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <iframe
+                  id="global-player-iframe"
+                  src={playerUrl}
+                  title="Cinema Player"
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allowFullScreen
+                  allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                />
+              </div>
+
+              {/* TV Show Episode List */}
+              {playerIsTv && (
+                <div className="p-6 md:p-10 bg-zinc-950 md:rounded-b-3xl border border-white/10 border-t-0 flex-1">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                      <Tv size={24} className="text-brand-primary" />
+                      <h3 className="text-2xl font-display font-black text-white uppercase italic tracking-tighter">Episodes</h3>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    <select
+                      value={playerSeason}
+                      onChange={(e) => {
+                        const s = Number(e.target.value);
+                        setPlayerSeason(s);
+                        setPlayerEpisode(1);
+                        setPlayerUrl(`https://www.vidking.net/embed/tv/${globalPlayerMovie.id}/${s}/1`);
+                      }}
+                      className="bg-white/5 border border-white/10 rounded-xl px-6 py-3 text-sm font-black text-white outline-none focus:border-brand-primary/50 cursor-pointer hover:bg-white/10 transition-all uppercase tracking-widest"
+                    >
+                      {Array.from({ length: playerTotalSeasons }, (_, i) => i + 1).map(s => (
+                        <option key={s} value={s} className="bg-zinc-900 text-white">Season {s}</option>
+                      ))}
+                    </select>
+                  </div>
 
-              <iframe
-                src={playerUrl}
-                title="Cinema Player"
-                className="w-full h-full"
-                frameBorder="0"
-                allowFullScreen
-                allow="autoplay; encrypted-media"
-              />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {playerEpisodes.map(ep => (
+                      <div
+                        key={ep.id}
+                        onClick={() => {
+                          setPlayerEpisode(ep.episode_number);
+                          setPlayerUrl(`https://www.vidking.net/embed/tv/${globalPlayerMovie.id}/${playerSeason}/${ep.episode_number}`);
+                          const playerEl = document.getElementById("global-player-iframe");
+                          if (playerEl) playerEl.scrollIntoView({ behavior: "smooth" });
+                        }}
+                        className={cn(
+                          "flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border group",
+                          playerEpisode === ep.episode_number
+                            ? "bg-brand-primary/10 border-brand-primary/30"
+                            : "bg-white/5 border-white/5 hover:border-brand-primary/30 hover:bg-white/10"
+                        )}
+                      >
+                        <div className="relative w-32 aspect-video rounded-xl overflow-hidden flex-none bg-zinc-900">
+                          {ep.still_path ? (
+                            <img
+                              src={getImageUrl(ep.still_path, "w300")}
+                              alt={ep.name}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white/20">
+                              <Film size={20} />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Play className="fill-white" size={24} />
+                          </div>
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                          <p className={cn(
+                            "text-sm font-black uppercase tracking-tight truncate transition-colors",
+                            playerEpisode === ep.episode_number ? "text-brand-primary" : "text-white group-hover:text-brand-primary"
+                          )}>
+                            {ep.episode_number}. {ep.name}
+                          </p>
+                          <p className="text-[10px] text-white/40 mt-1 uppercase tracking-widest truncate">
+                            {ep.air_date ? new Date(ep.air_date).toLocaleDateString() : 'N/A'} • ★ {ep.vote_average?.toFixed(1) || 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}
