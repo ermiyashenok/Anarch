@@ -35,3 +35,14 @@ export interface Video {
   site: string;
   type: string;
 }
+
+export interface Episode {
+  id: number;
+  name: string;
+  overview: string;
+  still_path: string;
+  episode_number: number;
+  season_number: number;
+  vote_average: number;
+  air_date: string;
+}
